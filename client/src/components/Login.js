@@ -49,10 +49,10 @@ const Login = ({ onLogin }) => {
           }
         }
 
-        if (role === "admin" || role === "manager") {
-          navigate("/adminDashboard");
+        if (role === "admin") {
+          navigate("/admindashboard");
         } else {
-          navigate("/home");
+          navigate("/userhome");
         }
       } else {
         setError(data.message || "Login failed");

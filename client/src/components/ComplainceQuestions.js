@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { jwtDecode } from 'jwt-decode';
 
-const Questions = () => {
+const ComplainceQuestions = () => {
     const [stores, setStores] = useState([]);
     const [openModal, setOpenModal] = useState(false);
     const [selectedStore, setSelectedStore] = useState('');
-    const [rowStates, setRowStates] = useState({});
+    const [file, setFile] = useState(null);
+    const [checked, setChecked] = useState(false);
 
     const getStores = async () => {
         try {
@@ -16,12 +16,6 @@ const Questions = () => {
             } else {
                 const data = await response.json();
                 setStores(data);
-                // Initialize row states
-                const initialState = data.reduce((acc, store) => {
-                    acc[store.question] = { checked: false, file: null };
-                    return acc;
-                }, {});
-                setRowStates(initialState);
             }
         } catch (error) {
             console.error('Error fetching stores:', error);
@@ -38,43 +32,26 @@ const Questions = () => {
     };
 
     const handleValidate = async () => {
-        const selectedRowState = rowStates[selectedStore];
-        if (!selectedRowState.file) {
+        if (!file) {
             alert('Please select a file to upload.');
             return;
         }
-    
-        const ntid = localStorage.getItem('ntid');
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('No token found');
-            return;
-        }
-        
-        const decodedToken = jwtDecode(token); // Decode the token properly
-        const id = decodedToken.id; // Get the ID from the decoded token
-    
+
         const formData = new FormData();
-        formData.append('file', selectedRowState.file);
+        formData.append('file', file);
         formData.append('question', selectedStore);
-        formData.append('id', id);
-        formData.append('ntid', ntid);
-    
-        console.log('FormData being sent:', formData); // Log form data to check what is being sent
-    
+
         try {
-            const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadimage`, {
+            const response = await fetch(`${process.env.REACT_APP_BASE_URL}/upload`, {
                 method: 'POST',
                 body: formData,
             });
-    
+
             if (response.ok) {
                 alert('File uploaded successfully!');
                 setOpenModal(false);
-                setRowStates(prevState => ({
-                    ...prevState,
-                    [selectedStore]: { checked: false, file: null }
-                }));
+                setFile(null);
+                setChecked(false);
             } else {
                 throw new Error('File upload failed');
             }
@@ -83,29 +60,14 @@ const Questions = () => {
             alert('Failed to upload file.');
         }
     };
-    
 
     const handleCloseModal = () => {
         setOpenModal(false);
     };
 
-    const handleCheckboxChange = (storename) => (e) => {
-        setRowStates(prevState => ({
-            ...prevState,
-            [storename]: { ...prevState[storename], checked: e.target.checked }
-        }));
-    };
-
-    const handleFileChange = (e) => {
-        setRowStates(prevState => ({
-            ...prevState,
-            [selectedStore]: { ...prevState[selectedStore], file: e.target.files[0] }
-        }));
-    };
-
     return (
         <div className="container mt-5">
-            <h1 className="mb-4 text-center">Daily Check List</h1>
+            <h1 className="mb-4 text-center">Complaince Check List</h1>
             <div className="table-responsive">
                 <table className="table table-striped table-bordered">
                     <thead className="thead-dark">
@@ -123,16 +85,12 @@ const Questions = () => {
                                     <td>
                                         <input
                                             type="checkbox"
-                                            checked={rowStates[store.question]?.checked || false}
-                                            onChange={handleCheckboxChange(store.question)}
+                                            checked={checked}
+                                            onChange={(e) => setChecked(e.target.checked)}
                                         />
                                     </td>
                                     <td>
-                                        <button
-                                            className='btn btn-success'
-                                            onClick={() => handleLogin(store.question)}
-                                            disabled={!rowStates[store.question]?.checked}
-                                        >
+                                        <button className='btn btn-success' onClick={() => handleLogin(store.question)}>
                                             Upload
                                         </button>
                                     </td>
@@ -161,7 +119,7 @@ const Questions = () => {
                                 <input
                                     type="file"
                                     className="form-control"
-                                    onChange={handleFileChange}
+                                    onChange={(e) => setFile(e.target.files[0])}
                                 />
                             </div>
                             <div className="modal-footer">
@@ -172,7 +130,7 @@ const Questions = () => {
                                     type="button"
                                     className="btn btn-success"
                                     onClick={handleValidate}
-                                    disabled={!rowStates[selectedStore]?.file}
+                                    disabled={!checked || !file}
                                 >
                                     Upload
                                 </button>
@@ -185,4 +143,4 @@ const Questions = () => {
     );
 };
 
-export default Questions;
+export default ComplainceQuestions;

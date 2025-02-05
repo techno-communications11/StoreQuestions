@@ -3,9 +3,14 @@ import login from '../components/login.js';  // Correct relative path with .js e
 import register from '../components/register.js';  // Add .js extension
 import resetpassword from '../components/resetpassword.js';  // Add .js extension if needed
 import authenticateToken from '../components/authMiddleware.js';
-import MarketStructure from '../components/marketStructure.js';
+import  handleMarketStructureFileUpload from '../components/marketStructure.js';
+import  handleCrediantalsFileUpload  from '../components/crediantals.js';
 import stores from '../components/stores.js';
 import questions from '../components/questions.js';
+import {upload} from '../multer/multer.js'
+ 
+import validatentid from '../components/validatentid.js'
+import  imageUpload  from "../components/imageUpload.js";
 
 const router = express.Router();
 
@@ -14,6 +19,17 @@ router.post('/register', register);
 router.get('/stores', stores);
 router.get('/questions', questions);
 router.put('/update-password',authenticateToken, resetpassword);
-router.put('/marketstructure',authenticateToken, MarketStructure)
+ router.post('/validatentid',validatentid)
+router.post('/crediantalsFile', upload.single('file'), handleCrediantalsFileUpload);
+router.post('/marketstructureFile', upload.single('file'), (req, res, next) => {
+  console.log('Uploaded file:', req.file); // Log file details
+  next();
+}, handleMarketStructureFileUpload);
+router.post("/uploadimage", upload.single("file"), (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No image uploaded" });
+    }
+    imageUpload(req, res);
+  });
 
 export default router;

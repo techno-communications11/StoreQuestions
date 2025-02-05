@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,13 +8,24 @@ const Navbar = () => {
     localStorage.clear(); // Clears the local storage
     window.location.href = "/"; // Redirect to the home page
   };
+   const token = localStorage.getItem("token");
+          let role = "";
+  
+          if (token) {
+            try {
+              const decodedToken = jwtDecode(token);
+              role = decodedToken.role;
+            } catch (error) {
+              console.error("Invalid token:", error);
+            }
+          }
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light shadow">
       <div className="container-fluid">
         <div className="d-flex align-items-center">
           <img src="logo.webp" height={40} alt="Logo" />
-          <Link className="navbar-brand fw-bold fs-6" to="/home">
+          <Link className="navbar-brand fw-bold fs-6" to="/userhome">
             Techno Communications LLC
           </Link>
         </div>
@@ -35,23 +47,28 @@ const Navbar = () => {
         >
           <ul className="navbar-nav ms-auto">
            
-          <li className="nav-item">
+          { role==='admin'&&<li className="nav-item">
               <Link className="nav-link fw-medium" to="/msupload">
-                msupload
+                MarketStructure
               </Link>
-            </li>
-            <li className="nav-item">
+            </li>}
+            { role==='admin'&& <li className="nav-item">
+              <Link className="nav-link fw-medium" to="/crediantals">
+                Crediantals
+              </Link>
+            </li>}
+           { role==='admin'&&<li className="nav-item">
               <Link className="nav-link fw-medium" to="/resetpassword">
                 reset password
               </Link>
-            </li>
+            </li>}
            
            
-            <li className="nav-item">
+            { role==='admin'&&<li className="nav-item">
               <Link className="nav-link fw-medium" to="/register">
                 Register
               </Link>
-            </li>
+            </li>}
             <li className="nav-item">
               <button
                 className="btn btn-danger mx-2 btn-small"

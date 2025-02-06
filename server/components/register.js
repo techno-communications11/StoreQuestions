@@ -7,7 +7,10 @@ import bcrypt from'bcrypt'
 
 // The Register function
 const register = async(req, res) => {
-  const { email, password,role} = req.body;
+  const { email, password,role,
+    districtManagerName,
+    market    
+    } = req.body;
 
    console.log("register",req.body)
 
@@ -35,8 +38,10 @@ const register = async(req, res) => {
       }
 
       // Insert the new user into the database
-      const insertQuery = 'INSERT INTO users (email, password,role) VALUES (?, ?,?)';
-      db.query(insertQuery, [email, hashedPassword,role], (err, result) => {
+      const insertQuery = 'INSERT INTO users (email, password,role,market,name) VALUES (?, ?,?,?,?)';
+      db.query(insertQuery, [email, hashedPassword,role,
+        market,districtManagerName
+        ], (err, result) => {
         if (err) {
           console.error(err);
           return res.status(500).json({ message: 'Error inserting user' });

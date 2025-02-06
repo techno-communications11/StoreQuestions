@@ -34,9 +34,11 @@ const login = async (req, res) => {
       const token = jwt.sign(
         {
           id: result[0].id,
-        
+          market:result[0].market,
+         name:result[0].name,
           role: result[0].role,
         },
+
         process.env.JWT_SECRET,
         { expiresIn: '1h' }  // Token will expire in 1 hour
       );

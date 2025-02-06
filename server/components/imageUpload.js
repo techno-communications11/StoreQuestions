@@ -1,6 +1,6 @@
-import uploadFileToS3 from '../multer/uploadToS3.js'; // Correct path with .js extension
-import db from '../dbConnection/db.js'; // Ensure this path is correct
-import fs from 'fs';
+import uploadFileToS3 from '../multer/uploadToS3.js';
+import db from '../dbConnection/db.js';
+import fs from 'fs/promises'; // Using promise-based fs
 
 const imageUpload = async (req, res) => {
   try {
@@ -9,41 +9,49 @@ const imageUpload = async (req, res) => {
       return res.status(400).json({ error: "No image uploaded" });
     }
 
-    // Get serial and ntid from the request body
-    const { id, ntid } = req.body;
-    console.log(req.body, "datat");
+    // Get id, ntid, and question from the request body
+    const { id, ntid, question } = req.body;
+    console.log(req.body, "data");
 
-    if (!id || !ntid) {
-      return res.status(400).json({ error: "id and NTID are required" });
+    if (!id || !ntid || !question) {
+      return res.status(400).json({ error: "id, NTID, and question are required" });
     }
 
     // Upload the image file to S3
-    const s3FileKey = await uploadFileToS3(req.file); // Assuming this function returns a promise
+    const s3FileKey = await uploadFileToS3(req.file);
 
     // Generate the image URL based on the S3 file key
-    const imageUrl = `${s3FileKey}`;
+    const imageUrl = `profilePhoto/${s3FileKey}`;
+
+    // Retrieve question_id from the database
+    const getQuestionID = 'SELECT id FROM questions WHERE Question = ?';
+    const [result] = await db.promise().query(getQuestionID, [question]);
+
+    if (result.length === 0) {
+      return res.status(400).json({ error: "Invalid question provided" });
+    }
+
+    const question_id = result[0].id;
 
     // Insert the URL into the database
-    const insertQuery = 'INSERT INTO images (userid, url, ntid) VALUES (?, ?, ?)';
-    
-    // Use promise-based query execution
-    const [insertResult] = await db.promise().query(insertQuery, [id, imageUrl, ntid]);
+    const insertQuery = 'INSERT INTO images (userid, url, ntid, question_id) VALUES (?, ?, ?, ?)';
+    const [insertResult] = await db.promise().query(insertQuery, [id, imageUrl, ntid, question_id]);
 
     if (insertResult.affectedRows === 1) {
       // File successfully uploaded and URL stored in the database
-      // Now unlink (delete) the file from the 'uploads' folder
-      const uploadedFilePath = req.file.path;
-      fs.unlink(uploadedFilePath, (err) => {
-        if (err) {
-          console.error('Error deleting file from uploads folder:', err);
-        } else {
-          console.log('File successfully deleted from uploads folder');
-        }
-      });
+      try {
+        await fs.unlink(req.file.path);
+        console.log('File successfully deleted from uploads folder');
+      } catch (err) {
+        console.error('Error deleting file from uploads folder:', err);
+      }
 
-      return res.status(200).json({ message: "Image uploaded and URL stored successfully", url: imageUrl });
+      return res.status(200).json({
+        message: "Image uploaded and URL stored successfully",
+        url: imageUrl,
+      });
     } else {
-      return res.status(500).json({ error: "Failed to insert data into image table" });
+      return res.status(500).json({ error: "Failed to insert data into the images table" });
     }
   } catch (error) {
     console.error("Error uploading image:", error);

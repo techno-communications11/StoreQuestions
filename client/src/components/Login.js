@@ -35,7 +35,7 @@ const Login = ({ onLogin }) => {
 
       if (response.status === 200) {
         localStorage.setItem("token", data.token);
-          onLogin();
+        onLogin();
 
         const token = localStorage.getItem("token");
         let role = "";
@@ -51,6 +51,11 @@ const Login = ({ onLogin }) => {
 
         if (role === "admin") {
           navigate("/admindashboard");
+        } else if (role === 'market_manager') {
+          navigate('/marketdashboard')
+
+        } else if (role === 'district_manager') {
+          navigate('/dmdashboard')
         } else {
           navigate("/userhome");
         }
@@ -63,7 +68,7 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
@@ -74,7 +79,7 @@ const Login = ({ onLogin }) => {
       }}
     >
       {/* Decorative Shapes */}
-      <div 
+      <div
         className="position-absolute"
         style={{
           top: '-10%',
@@ -86,7 +91,7 @@ const Login = ({ onLogin }) => {
           transform: 'rotate(45deg)'
         }}
       />
-      <div 
+      <div
         className="position-absolute"
         style={{
           bottom: '-10%',
@@ -118,7 +123,7 @@ const Login = ({ onLogin }) => {
 
       <div className="row w-100 m-0">
         {/* Left side with logo */}
-        <motion.div 
+        <motion.div
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -129,18 +134,18 @@ const Login = ({ onLogin }) => {
             src="logoT.webp"
             alt="Logo"
             className="img-fluid w-100  "
-           
+
           />
         </motion.div>
 
         {/* Right side with login form */}
-        <motion.div 
+        <motion.div
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="col-md-6 d-flex justify-content-center align-items-center p-5"
         >
-          <div 
+          <div
             className="card shadow-lg w-75 border-0 rounded-3"
             style={{
               background: 'rgba(255, 255, 255, 0.9)',
@@ -150,7 +155,7 @@ const Login = ({ onLogin }) => {
           >
             <div className="card-body p-5" >
               {error && (
-                <motion.div 
+                <motion.div
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   className="alert alert-danger"
@@ -198,11 +203,11 @@ const Login = ({ onLogin }) => {
                   <motion.span
                     // whileHover={{ scale: 1.2 }}
                     className="position-absolute end-0 me-3"
-                    style={{ 
-                      cursor: "pointer", 
+                    style={{
+                      cursor: "pointer",
                       // transform: "translateY(-50%)",
                       color: '#E10174',
-                      bottom:'1rem'
+                      bottom: '1rem'
                     }}
                     onClick={() => setShowPassword(!showPassword)}
                   >

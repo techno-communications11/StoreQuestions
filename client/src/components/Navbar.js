@@ -25,7 +25,7 @@ const Navbar = () => {
       <div className="container-fluid">
         <div className="d-flex align-items-center">
           <img src="logo.webp" height={40} alt="Logo" />
-          <Link className="navbar-brand fw-bold fs-6" to="/userhome">
+          <Link className="navbar-brand fw-bold fs-6" to={`${role==='admin'?'admindashboard':role==='district_manager'?'dmdashboard':role==='market_manager'?'marketdashboard':'userhome'}`}>
             Techno Communications LLC
           </Link>
         </div>

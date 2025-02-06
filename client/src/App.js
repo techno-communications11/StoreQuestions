@@ -12,10 +12,17 @@ import UserHome from './components/UserHome';
 import Crediantals from './components/Credentials';
 import ComplianceQuestions from './components/ComplainceQuestions'
 import AdminDashboard from './components/AdminDashboard';
+import StoreDashboard from './components/StoreDashbaord';
+import DetailedData from './components/DetailedData';
+import DMDashboard from './components/DMDashboard';
+import MarketDashboard from './components/MarketDashboard';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+   const [marketname,setMarketname]=useState('');
+   const [storename,setStorename]=useState('');
+    console.log(storename,'stireijfkh')
 
   // Check if the user is authenticated on initial load
   useEffect(() => {
@@ -48,11 +55,30 @@ function App() {
           path="/userhome"
           element={<PrivateRoute element={<UserHome onverify={handleVerify} />} />}
         />
+         <Route
+          path="/storedashboard"
+          element={<PrivateRoute element={<StoreDashboard marketname={marketname} setStorename={setStorename} />} />}
+        />
+
+
+        
+        <Route
+          path="/detaileddata"
+          element={<PrivateRoute element={<DetailedData storename={storename}/>} />}
+        />
 
         {/* Private route for market structure */}
         <Route
           path="/msupload"
           element={<PrivateRoute element={<MarketStructure />} />}
+        />
+        <Route
+          path="/dmdashboard"
+          element={<PrivateRoute element={<DMDashboard setStorename={setStorename} />} />}
+        />
+        <Route
+          path="/marketdashboard"
+          element={<PrivateRoute element={<MarketDashboard  setStorename={setStorename}/>} />}
         />
 
         {/* Conditional routing based on isVerified */}
@@ -76,7 +102,7 @@ function App() {
         />
          <Route
           path="/admindashboard"
-          element={<PrivateRoute element={<AdminDashboard />} />}
+          element={<PrivateRoute element={<AdminDashboard setMarketname={setMarketname} />} />}
         />
 
         {/* Private route for credentials */}

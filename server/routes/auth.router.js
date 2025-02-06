@@ -11,12 +11,22 @@ import {upload} from '../multer/multer.js'
  
 import validatentid from '../components/validatentid.js'
 import  imageUpload  from "../components/imageUpload.js";
+ import getMarketWiseStats from '../components/getMarketWiseStats.js';
+ import getstorewiseuploadcount from '../components/getstorewiseuploadcount.js';
+ import getImagesDataByStoreName from '../components/getImagesDataByStorename.js';
+ import getmarkets from '../components/getMarkets.js';
+ import getDmStats from '../components/getDmStats.js';
 
 const router = express.Router();
 
 router.post('/login', login);
 router.post('/register', register);
 router.get('/stores', stores);
+router.get('/getdmstats', getDmStats);
+router.get('/getmarkets', getmarkets);
+router.get('/getmarketwise', getMarketWiseStats);
+router.post('/getimagesdata', getImagesDataByStoreName);
+router.get('/getstorewiseuploadcount', getstorewiseuploadcount);
 router.get('/questions', questions);
 router.put('/update-password',authenticateToken, resetpassword);
  router.post('/validatentid',validatentid)

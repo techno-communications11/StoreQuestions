@@ -16,6 +16,11 @@ import  imageUpload  from "../components/imageUpload.js";
  import getImagesDataByStoreName from '../components/getImagesDataByStorename.js';
  import getmarkets from '../components/getMarkets.js';
  import getDmStats from '../components/getDmStats.js';
+ import imageverify from '../components/imageverify.js'
+ import uploadeddata from '../components/uploadeddata.js';
+ import createquestion from  '../components/createquestion.js'
+ import getQuestion from '../components/getQuestion.js';
+ import deletequestion from '../components/deletequestion.js'
 
 const router = express.Router();
 
@@ -25,7 +30,12 @@ router.get('/stores', stores);
 router.get('/getdmstats', getDmStats);
 router.get('/getmarkets', getmarkets);
 router.get('/getmarketwise', getMarketWiseStats);
+router.post('/uploadeddata', uploadeddata);
+router.post('/addQuestion', createquestion);
+router.post('/deleteQuestion/:id', deletequestion);
+router.get('/getquestion', getQuestion);
 router.post('/getimagesdata', getImagesDataByStoreName);
+router.post('/imageverify', imageverify);
 router.get('/getstorewiseuploadcount', getstorewiseuploadcount);
 router.get('/questions', questions);
 router.put('/update-password',authenticateToken, resetpassword);

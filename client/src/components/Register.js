@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import useMarkets from "../components/useMarkets ";
+import Lottie from "lottie-react";
+import Animation from "./RegisterAnimation.json";
 const Register = () => {
   const [userData, setUserData] = useState({
     email: '',
@@ -31,7 +33,7 @@ const Register = () => {
     }
 
     try {
-       console.log(userData)
+      console.log(userData)
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/register`, {
         method: 'POST',
         headers: {
@@ -43,6 +45,7 @@ const Register = () => {
 
       if (response.status === 201) {
         setSuccess('Registration successful! Please login.');
+        setTimeout(() => setSuccess(''), 3000);
         setError('');
         setUserData({
           email: '',
@@ -88,6 +91,16 @@ const Register = () => {
             background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
           }}
         >
+
+          <div className="col-lg-3 me-5 col-md-3 mb-4 d-flex justify-content-center align-items-center">
+            <Lottie
+              className="mb-3"
+              autoplay
+              loop
+              animationData={Animation}
+              style={{ height: "100%", width: "100%" }}
+            />
+          </div>
           <div className="col-md-5">
             <div className="card shadow-lg border-0 rounded-lg p-2">
               <div className="card-body">
@@ -141,11 +154,11 @@ const Register = () => {
                         />
                       </div>
 
-                      
+
                     </>
                   )}
 
-{userData.role === 'market_manager' && (
+                  {userData.role === 'market_manager' && (
                     <div className="mb-3">
                       <select
                         className="form-select shadow-none border"

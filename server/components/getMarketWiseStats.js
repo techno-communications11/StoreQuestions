@@ -1,38 +1,57 @@
-import db from "../dbConnection/db.js";
-const getMarketWiseStats=async(req,res)=>{
-    try {
-        const query = `
-         WITH StoreNTIDs AS (
-    -- Step 1 & 2: Fetch market, storename, doorcode, and get ntid from credentials
-    SELECT m.market, m.storename, c.ntid
-    FROM marketStructure m
-    JOIN credentials c ON m.doorcode = c.doorcode
-),
-StoreUploadStatus AS (
-    -- Step 3: Identify stores that uploaded at least one URL
-    SELECT DISTINCT s.storename, s.market, i.createdat  -- Include created_at from images
-    FROM StoreNTIDs s
-    JOIN images i ON s.ntid = i.ntid
-)
--- Step 4: Count uploaded & not uploaded stores per market and list all createdat dates for uploads
-SELECT 
-    m.market,
-    COUNT(DISTINCT CASE WHEN su.storename IS NOT NULL THEN su.storename END) AS uploaded_stores_count,
-    COUNT(DISTINCT CASE WHEN su.storename IS NULL THEN m.storename END) AS not_uploaded_stores_count,
-    GROUP_CONCAT(DISTINCT su.createdat ORDER BY su.createdat ASC) AS all_uploaded_dates  -- All created_at dates in a single row
-FROM marketStructure m
-LEFT JOIN StoreUploadStatus su ON m.storename = su.storename  -- Left join to get uploaded stores
-GROUP BY m.market;
+import db from '../dbConnection/db.js';
 
-        `;
-    
-        const [results] = await db.promise().query(query);
-        
-        res.status(200).json({ success: true, data: results });
-      } catch (error) {
-        console.error("Error fetching market-wise store upload status:", error);
-        res.status(500).json({ success: false, error: "Internal Server Error" });
-      }
+const getMarketStoreCounts = async (req, res) => {
+  try {
+    // Extract query parameters (optional startDate and endDate)
+    const { startDate, endDate } = req.query;
 
-}
-export default getMarketWiseStats;
+    // Default to today's date if no date range is provided
+    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const start = startDate || today;
+    const end = endDate || today;
+
+    console.log("Date Range:", { start, end }); // Debugging: Log the date range
+
+    // Define the SQL query
+    const query = `
+      SELECT 
+        m.market,
+        COUNT(DISTINCT CASE WHEN i.userid IS NOT NULL THEN m.storename END) AS completed_stores_count,
+        COUNT(DISTINCT CASE WHEN i.userid IS NULL THEN m.storename END) AS not_completed_stores_count
+      FROM 
+        marketstructure m
+      LEFT JOIN 
+        users u ON m.storeemail = u.email AND u.email IS NOT NULL
+      LEFT JOIN 
+        images i ON u.id = i.userid AND i.userid IS NOT NULL
+        AND DATE(i.createdat) BETWEEN ? AND ?
+      GROUP BY 
+        m.market;
+    `;
+
+    console.log("Executing Query:", query, [start, end]); // Debugging: Log the query
+
+    // Execute the query with parameters
+    const [results] = await db.promise().query(query, [start, end]);
+
+    console.log("Query Results:", results); // Debugging: Log the query results
+
+    // Handle empty results
+    if (results.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No data found for the specified date range.",
+        data: []
+      });
+    }
+
+    // Send the response
+    return res.status(200).json({ success: true, data: results });
+  } catch (err) {
+    // Log the error and send an error response
+    console.error("Error fetching market store counts:", err.message);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+export default getMarketStoreCounts;

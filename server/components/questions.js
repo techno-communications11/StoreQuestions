@@ -1,7 +1,7 @@
 import db from '../dbConnection/db.js';  // Import the connection pool
 
 const questions = (req, res) => {
-    const query = 'SELECT question FROM questions';
+    const query = 'SELECT question,type FROM questions';
 
     // Execute the query using the connection pool
     db.query(query, (err, rows) => {

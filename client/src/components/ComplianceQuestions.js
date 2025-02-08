@@ -9,7 +9,7 @@ import {
   FaSpinner,
 } from 'react-icons/fa'; // Importing React Icons
 
-const Questions = () => {
+const ComplianceQuestions = () => {
   const [stores, setStores] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState('');
@@ -27,7 +27,6 @@ const Questions = () => {
       } else {
         const data = await response.json();
         setStores(data);
-         console.log(data)
         // Initialize row states
         const initialState = data.reduce((acc, store) => {
           acc[store.question] = { checked: false, file: null };
@@ -95,7 +94,6 @@ const Questions = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
     setErrorMessage('');
-    setSuccessMessage(''); // Clear success message as well
   };
 
   const handleCheckboxChange = (storename) => (e) => {
@@ -167,7 +165,7 @@ const Questions = () => {
             </thead>
             <tbody>
               {stores.length > 0 ? (
-                stores.filter((store) => store.type === 'Daily Question').map((store, index) => (
+                 stores.filter((store) => store.type === 'Compliance Question').map((store, index) => (
                   <tr key={index}>
                     <td>{store.question?.toLowerCase()}</td>
                     <td>
@@ -256,4 +254,4 @@ const Questions = () => {
   );
 };
 
-export default Questions;
+export default ComplianceQuestions;

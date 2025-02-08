@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Spinner } from "react-bootstrap"; // Bootstrap spinner
-import { FaImage, FaExclamationCircle } from "react-icons/fa"; // React Icons
-import "bootstrap/dist/css/bootstrap.min.css"; // Bootstrap CSS
+import React, { useEffect, useState } from "react"; //importing  use effect and usestate from react
+import { Spinner, Container, Card, Alert, Button } from "react-bootstrap";
+import { BsImage, BsExclamationCircle, BsCheckCircle, BsXCircle, 
+         BsEye, BsCalendar, BsPerson } from "react-icons/bs";
+import { motion } from "framer-motion";
 
 const DetailedData = ({ storename }) => {
-  const [imagesData, setImagesData] = useState([]);
+  const [imagesData, setImagesData] = useState([]); //initializing variables for storing incomming data from server which can store data in an array
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  storename = storename || localStorage.getItem("storename");
+  const [imageverified, setImageverified] = useState(null);
 
-  console.log(storename, "store");
+  storename = storename || localStorage.getItem("storename");
 
   useEffect(() => {
     const fetchImagesData = async () => {
@@ -33,7 +34,6 @@ const DetailedData = ({ storename }) => {
 
         if (data.success) {
           setImagesData(data.data);
-          console.log(data.data)
         } else {
           setError("No data found for this store");
         }
@@ -47,66 +47,210 @@ const DetailedData = ({ storename }) => {
     fetchImagesData();
   }, [storename]);
 
+  const handleImageAccept = async (id, status) => {
+    if (!id || !status) {
+      setError("Data not sent correctly");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/imageverify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, status }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setImageverified(result.data);
+        setImagesData(prevData =>
+          prevData.map(image =>
+            image.id === id ? { ...image, image_verified: status } : image
+          )
+        );
+      } else {
+        setError("Failed to verify image");
+      }
+    } catch (err) {
+      console.error("Error during fetch:", err.message);
+      setError("Error verifying image");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    if (!status) return null;
+    const isAccepted = status.toLowerCase() === 'accepted';
+    return (
+      <span className={`badge-custom ${isAccepted ? 'badge-success' : 'badge-danger'}`}>
+        {isAccepted ? (
+          <><BsCheckCircle className="me-2" />Accepted</>
+        ) : (
+          <><BsXCircle className="me-2" />Rejected</>
+        )}
+      </span>
+    );
+  };
+
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4 text-center">
-        <FaImage className="me-2" />
-        Store Images
-      </h2>
+    <Container fluid className="py-4 bg-light">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="shadow-sm mb-4">
+          <Card.Body>
+            <h2 className="text-center fw-bold mb-4" style={{ color: '#FF69B4' }}>
+              <BsImage className="me-2" />
+              Store Images - {storename}
+            </h2>
 
-      {loading && (
-        <div className="text-center">
-          <Spinner animation="border" role="status" variant="primary">
-            <span className="visually-hidden">Loading...</span>
-          </Spinner>
-        </div>
-      )}
+            {loading && (
+              <div className="text-center py-5">
+                <Spinner animation="border" style={{ color: '#FF69B4' }} />
+              </div>
+            )}
 
-      {error && (
-        <div className="alert alert-danger d-flex align-items-center" role="alert">
-          <FaExclamationCircle className="me-2" />
-          {error}
-        </div>
-      )}
+            {error && (
+              <Alert variant="danger" className="d-flex align-items-center">
+                <BsExclamationCircle className="me-2" />
+                {error}
+              </Alert>
+            )}
 
-      {!loading && !error && imagesData.length > 0 && (
-        <div className="table-responsive">
-          <table className="table table-striped table-hover">
-            <thead className="table-dark">
-              <tr>
-                <th>SINO</th>
-                <th>Question</th>
-                <th>NTID</th>
-                <th>Image URL</th>
-                <th>Created At</th>
-              </tr>
-            </thead>
-            <tbody>
-              {imagesData.map((image, index) => (
-                <tr key={index}>
-                  <td>{index + 1}</td>
-                  <td>{image.Question}</td>
-                  <td>{image.ntid}</td>
-                 
-                  <td>
-                    <a href={image.signedUrl} target="_blank" rel="noopener noreferrer">
-                      View Image
-                    </a>
-                  </td>
-                  <td>{new Date(image.createdat).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            {!loading && !error && imagesData.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                className="table-responsive"
+              >
+                <table className="table table-hover align-middle">
+                  <thead className="bg-light">
+                    <tr>
+                      <th className="text-muted">SINO</th>
+                      <th className="text-muted">Question</th>
+                      <th className="text-muted">NTID</th>
+                      <th className="text-muted">Image</th>
+                      <th className="text-muted">Status</th>
+                      <th className="text-muted">Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {imagesData
+                      .sort((a, b) => new Date(b.createdat) - new Date(a.createdat))
+                      .map((image, index) => (
+                        <motion.tr
+                          key={index}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          whileHover={{ scale: 1.01 }}
+                        >
+                          <td>{index + 1}</td>
+                          <td>{image.Question}</td>
+                          <td>
+                            <span className="d-flex align-items-center">
+                              <BsPerson className="me-2" />
+                              {image.ntid}
+                            </span>
+                          </td>
+                          <td>
+                            <Button
+                              variant="outline-pink"
+                              size="sm"
+                              as="a"
+                              href={image.signedUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <BsEye className="me-2" />
+                              View Image
+                            </Button>
+                          </td>
+                          <td>
+                            {image.image_verified ? (
+                              getStatusBadge(image.image_verified)
+                            ) : (
+                              <div className="d-flex gap-2">
+                                <Button
+                                  variant="outline-success"
+                                  size="sm"
+                                  onClick={() => handleImageAccept(image.id, 'accepted')}
+                                >
+                                  <BsCheckCircle className="me-2" />
+                                  Accept
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  onClick={() => handleImageAccept(image.id, 'rejected')}
+                                >
+                                  <BsXCircle className="me-2" />
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                          </td>
+                          <td>
+                            <span className="d-flex align-items-center text-muted">
+                              <BsCalendar className="me-2" />
+                              {new Date(image.createdat).toLocaleString()}
+                            </span>
+                          </td>
+                        </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </motion.div>
+            )}
 
-      {!loading && !error && imagesData.length === 0 && (
-        <div className="alert alert-info text-center" role="alert">
-          No images found for this store.
-        </div>
-      )}
-    </div>
+            {!loading && !error && imagesData.length === 0 && (
+              <Alert variant="info" className="text-center">
+                No images found for this store.
+              </Alert>
+            )}
+          </Card.Body>
+        </Card>
+      </motion.div>
+
+      <style jsx>{`
+        .btn-outline-pink {
+          color: #FF69B4;
+          border-color: #FF69B4;
+        }
+        .btn-outline-pink:hover {
+          color: white;
+          background-color: #FF69B4;
+        }
+        .badge-custom {
+          padding: 8px 12px;
+          border-radius: 20px;
+          font-weight: 500;
+          display: inline-flex;
+          align-items: center;
+          font-size: 0.9rem;
+        }
+        .badge-success {
+          background-color: #d4edda;
+          color: #155724;
+        }
+        .badge-danger {
+          background-color: #f8d7da;
+          color: #721c24;
+        }
+        .table-hover tbody tr:hover {
+          background-color: rgba(255, 105, 180, 0.05);
+        }
+      `}</style>
+    </Container>
   );
 };
 

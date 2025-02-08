@@ -1,5 +1,5 @@
- import fs from 'fs'
- import path from 'path';
+ import fs from 'fs' //for file operations  async/sync
+ import path from 'path'; // used to handling file paths and avoid platform specific path issues
  import csv from 'csv-parser'
  import db from '../dbConnection/db.js';
 

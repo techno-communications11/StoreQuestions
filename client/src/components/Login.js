@@ -35,12 +35,13 @@ const Login = ({ onLogin }) => {
 
       if (response.status === 200) {
         localStorage.setItem("token", data.token);
-        onLogin();
+        
 
         const token = localStorage.getItem("token");
         let role = "";
 
         if (token) {
+          onLogin(token);
           try {
             const decodedToken = jwtDecode(token);
             role = decodedToken.role;

@@ -21,7 +21,7 @@ const imageUpload = async (req, res) => {
     const s3FileKey = await uploadFileToS3(req.file);
 
     // Generate the image URL based on the S3 file key
-    const imageUrl = `profilePhoto/${s3FileKey}`;
+    const imageUrl = `${s3FileKey}`;
 
     // Retrieve question_id from the database
     const getQuestionID = 'SELECT id FROM questions WHERE Question = ?';

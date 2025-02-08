@@ -15,31 +15,37 @@ const UserHome = ({ onverify }) => {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [isVerifying, setIsVerifying] = useState(false); // Track if the NTID is being verified
-    console.log(username, 'name');
+    // console.log(username, 'name');
 
     const token = localStorage.getItem('token'); // or wherever you store the JWT token
-    const decoded = jwtDecode(token);
-    const id = decoded.id;
+    const decoded = jwtDecode(token); //decoding the token
+    const id = decoded.id; //getting id from token
 
-    const openModal = (type) => {
-        setError(false)
+    const openModal = (type) => { //opening the modal
+        setError(false) // setting error to default state
         setModalContent(type === "checklist" ? "Daily Checklist" : "Compliance Checklist");
-        setShowModal(true);
+        setShowModal(true); //making true
     };
 
     const handleNtid = async () => {
         console.log(ntid, id, "id");
-
+    
         setIsVerifying(true); // Start verification process
-
+    
         const name = await validatingNtid(ntid, id); // Await the function call
-
+    
         console.log(name, "Got name from validation");
-
+    
         if (name) {
             setUsername(name.name); // Show name
-            onverify(); // Trigger verification callback
-
+            // Debugging log for onverify
+            if (typeof onverify === 'function') {
+                console.log("Calling onverify function...");
+                onverify(); // Trigger verification callback
+            } else {
+                console.error("onverify is not a function or is undefined");
+            }
+    
             setTimeout(() => {
                 setIsVerifying(false); // End verification process
                 setTimeout(() => {
@@ -47,23 +53,25 @@ const UserHome = ({ onverify }) => {
                     if (modalContent === 'Daily Checklist') {
                         navigate("/questions");
                     } else {
-                        navigate("/compleincequestions");
+                        navigate("/compliancequestions");
                     }
-                }, 2000); // 3 seconds delay for showing username
-            }, 1000); // Delay before showing the name
+                }, 2000); // 2 seconds delay for showing username
+            }, 1000); // 1 second delay before showing the name
         } else {
-
             setError('Invalid NTID / Verification Failed')
             setIsVerifying(false); // End verification process if failed
         }
     };
+    
    
 
     
 
     return (
-        <div className="page-wrapper">
-            <Container fluid className="h-100 d-flex flex-column user-home">
+        <div  style={{
+            background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
+          }}>
+            <Container fluid className=" d-flex flex-column  p-4">
                 {/* Header Section */}
                 <div className="header-section text-center">
                     <h2 className="company-title display-3 fw-bold text-gradient mb-0">
@@ -79,8 +87,8 @@ const UserHome = ({ onverify }) => {
                 <Row className="justify-content-center align-items-stretch g-4 main-content">
                     {/* Daily Checklist Card */}
                     <Col md={6} lg={5}>
-                        <Card className="feature-card h-100 text-center border-0">
-                            <Card.Body className="d-flex flex-column align-items-center p-4">
+                        <Card className="feature-card  text-center border-0 mt-4">
+                            <Card.Body className="d-flex flex-column align-items-center p-5">
                                 <div className="icon-wrapper">
                                     <FaClipboardList className="feature-icon" />
                                 </div>
@@ -100,8 +108,8 @@ const UserHome = ({ onverify }) => {
 
                     {/* Compliance Checklist Card */}
                     <Col md={6} lg={5}>
-                        <Card className="feature-card h-100 text-center border-0">
-                            <Card.Body className="d-flex flex-column align-items-center p-4">
+                        <Card className="feature-card  text-center border-0 mt-4">
+                            <Card.Body className="d-flex flex-column align-items-center p-5">
                                 <div className="icon-wrapper">
                                     <FaCheckCircle className="feature-icon" />
                                 </div>

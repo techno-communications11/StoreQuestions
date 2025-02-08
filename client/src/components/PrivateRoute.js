@@ -1,16 +1,8 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom'; //importing naviage for  navigating betweeb pages
 
-const PrivateRoute = ({ element, ...rest }) => {
-  const token = localStorage.getItem("token");
-
-  // If there's no token, redirect to home or login
-  if (!token) {
-    return <Navigate to="/" />;
-  }
-
-  // If there's a token, return the element (component) passed as a prop
-  return element;
+const PrivateRoute = ({ children, isAuthenticated }) => { //es6 function or callback function as called
+  return isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
-export default PrivateRoute;
+export default PrivateRoute; //export privaterouter so that  we can use it in other pages

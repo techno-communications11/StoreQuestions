@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { FaCloudUploadAlt, FaFile, FaCheckCircle } from 'react-icons/fa';
+import Lottie from "lottie-react";
+import Animation from "./store.json";
 
 function MarketStructure() {
   const [file, setFile] = useState(null);
@@ -59,14 +60,45 @@ function MarketStructure() {
   
 
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow-lg border-0 rounded-4" style={{ maxWidth: '500px', width: '90%' }}>
-        <div className="card-body p-5">
-          <div className="text-center mb-4">
-            <div className="display-6 text-primary mb-3">
+    <>
+    <div className="ms-2 rounded me-2 mb-1"
+        style={{
+          backgroundImage: "url(/store.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          height: "150px",
+          width: "99.5%",
+          opacity: "0.9",
+        }}
+      >
+        <h4 className="text-white mb-1 fs-1 text-center pt-5">
+          Market Structure
+        </h4>
+      </div>
+    <div className="max-vh-100  p-3 d-flex align-items-center justify-content-center" style={{
+            background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
+          }}
+        >
+       <div className="col-lg-3 me-5 col-md-3 mb-2 d-flex justify-content-center align-items-center">
+            <Lottie
+              className="mb-3"
+              autoplay
+              loop
+              animationData={Animation}
+              style={{ height: "100%", width: "100%" }}
+            />
+          </div>
+      <div className="card shadow-lg mt-5 border-0 rounded-4" style={{ maxWidth: '500px', width: '90%' }}>
+        
+        <div className="card-body p-4">
+          
+          <div className="text-center mb-1">
+            
+            <div className="display-6 text-primary mb-1">
               <FaCloudUploadAlt size={50} />
             </div>
-            <h2 className="fw-bold mb-2">Market Structure File Upload</h2>
+            <h2 className="fw-bold mb-1">Market Structure File Upload</h2>
             <p className="text-muted">Upload your management documents here</p>
           </div>
 
@@ -85,7 +117,8 @@ function MarketStructure() {
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="upload-box position-relative mb-4 p-4 rounded-3 border-2 border-primary border-dashed bg-light text-center">
+            
+            <div className="upload-box position-relative mb-2 p-2 rounded-3 border-2 border-primary border-dashed bg-light text-center">
               <input 
                 type="file" 
                 className="position-absolute top-0 start-0 opacity-0 w-100 h-100 cursor-pointer" 
@@ -169,6 +202,7 @@ function MarketStructure() {
         }
       `}</style>
     </div>
+    </>
   );
 }
 

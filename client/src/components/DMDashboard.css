@@ -1,0 +1,50 @@
+/* Pink Theme */
+.text-pink {
+    color: #ff4081 !important;
+}
+
+.bg-pink {
+    background-color: #ff4081 !important;
+}
+
+.table-pink th {
+    background-color: #ff4081 !important;
+    color: white !important;
+}
+
+.text-pink-hover:hover {
+    color: #ff4081 !important;
+    text-decoration: underline;
+}
+
+/* Spinner Customization */
+.spinner-border.pink {
+    border-top-color: #ff4081 !important;
+    border-right-color: #ff4081 !important;
+}
+
+/* Button Customization */
+.btn-pink {
+    background-color: #ff4081 !important;
+    border-color: #ff4081 !important;
+    color: white !important;
+}
+
+.btn-pink:hover {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.animate__fadeIn {
+    animation: fadeIn 1s ease-in-out;
+}

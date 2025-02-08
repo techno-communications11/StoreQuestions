@@ -9,107 +9,126 @@ import MarketStructure from './components/MarketStructure';
 import Questions from './components/Questions';
 import UpdatePassword from './components/updatepassword';
 import UserHome from './components/UserHome';
-import Crediantals from './components/Credentials';
-import ComplianceQuestions from './components/ComplainceQuestions'
+import Credentials from './components/Credentials';
+import ComplianceQuestions from './components/ComplianceQuestions';
 import AdminDashboard from './components/AdminDashboard';
 import StoreDashboard from './components/StoreDashbaord';
 import DetailedData from './components/DetailedData';
 import DMDashboard from './components/DMDashboard';
 import MarketDashboard from './components/MarketDashboard';
+import UploadedData from './components/UploadedData';
+import CreateQuestions from './components/CreateQuestions';
+import { jwtDecode } from 'jwt-decode'; // Import the jwt-decode library
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-   const [marketname,setMarketname]=useState('');
-   const [storename,setStorename]=useState('');
-    console.log(storename,'stireijfkh')
+  const [role, setRole] = useState(null);
+  const [marketname, setMarketname] = useState('');
+  const [storename, setStorename] = useState('');
 
-  // Check if the user is authenticated on initial load
+  // Check if user is authenticated and token is valid
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true);
-    }
-  }, []);
+    const checkAuth = () => {
+      const token = localStorage.getItem("token"); // Retrieve token from localStorage
+      const isAuthenticatedFromStorage = localStorage.getItem("isAuthenticated");
+      const isVerifiedFromStorage = localStorage.getItem("isVerified");
 
-  // Function to update authentication state
-  const handleLogin = () => {
-    setIsAuthenticated(true);
+      // Validate token before using it
+      if (token && typeof token === 'string') {
+        try {
+          const decodedToken = jwtDecode(token);
+          const currentTime = Date.now() / 1000;
+
+          if (decodedToken.exp > currentTime) {
+            setIsAuthenticated(true);
+            setRole(decodedToken.role);
+          } else {
+            handleLogout(); // Token expired
+          }
+        } catch (error) {
+          console.error("Token decode error:", error);
+          handleLogout(); // Invalid token
+        }
+      } else {
+        console.error('Invalid or missing token:', token);
+        handleLogout(); // Invalid token
+      }
+
+      if (isVerifiedFromStorage === "true") {
+        setIsVerified(true);
+      }
+    };
+
+    checkAuth();
+  }, []); // Run on component mount
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("isVerified");
+    setIsAuthenticated(false);
+    setIsVerified(false);
+    setRole(null);
   };
 
+  const handleLogin = (token) => {
+    if (!token || typeof token !== 'string') {
+      console.error('Invalid token received:', token);
+      handleLogout();
+      return;
+    }
+
+    try {
+      const decodedToken = jwtDecode(token);
+      setIsAuthenticated(true);
+      setRole(decodedToken.role); // Assuming role is stored in the token
+      localStorage.setItem("token", token);
+      localStorage.setItem("isAuthenticated", "true");
+    } catch (error) {
+      console.error('Login error:', error);
+      handleLogout();
+    }
+  };
+
+  // Fix: Make sure handleVerify is passed to UserHome as onVerify
   const handleVerify = () => {
     setIsVerified(true);
-    localStorage.setItem('isVerified', isVerified)
+    localStorage.setItem('isVerified', "true");
   };
 
   return (
     <BrowserRouter>
-      {isAuthenticated && <Navbar />}
+      {isAuthenticated && <Navbar onLogout={handleLogout} role={role} />}
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<Login onLogin={handleLogin} />} />
+        <Route path="/" element={isAuthenticated ? (
+          role === 'admin' ? <Navigate to="/admindashboard" replace /> :
+          role === 'user' ? <Navigate to="/userhome" replace /> :
+          role === 'district_manager' ? <Navigate to="/dmdashboard" replace /> :
+          role === 'market_manager' ? <Navigate to="/marketdashboard" replace /> :
+          null
+        ) : (
+          <Login onLogin={handleLogin} />
+        )} />
         <Route path="/register" element={<Register />} />
 
-        {/* Private route for user home */}
-        <Route
-          path="/userhome"
-          element={<PrivateRoute element={<UserHome onverify={handleVerify} />} />}
-        />
-         <Route
-          path="/storedashboard"
-          element={<PrivateRoute element={<StoreDashboard marketname={marketname} setStorename={setStorename} />} />}
-        />
-
-
-        
-        <Route
-          path="/detaileddata"
-          element={<PrivateRoute element={<DetailedData storename={storename}/>} />}
-        />
-
-        {/* Private route for market structure */}
-        <Route
-          path="/msupload"
-          element={<PrivateRoute element={<MarketStructure />} />}
-        />
-        <Route
-          path="/dmdashboard"
-          element={<PrivateRoute element={<DMDashboard setStorename={setStorename} />} />}
-        />
-        <Route
-          path="/marketdashboard"
-          element={<PrivateRoute element={<MarketDashboard  setStorename={setStorename}/>} />}
-        />
-
-        {/* Conditional routing based on isVerified */}
-        <Route
-          path="/questions"
-          element={(isVerified || localStorage.getItem('isVerified'))
-            ? <PrivateRoute element={<Questions />} />
-            : <Navigate to="/userhome" />}
-        />
-        <Route
-          path="/compleincequestions"
-          element={(isVerified || localStorage.getItem('isVerified'))
-            ? <PrivateRoute element={<ComplianceQuestions />} />
-            : <Navigate to="/userhome" />}
-        />
-
-        {/* Private route for reset password */}
-        <Route
-          path="/resetpassword"
-          element={<PrivateRoute element={<UpdatePassword />} />}
-        />
-         <Route
-          path="/admindashboard"
-          element={<PrivateRoute element={<AdminDashboard setMarketname={setMarketname} />} />}
-        />
-
-        {/* Private route for credentials */}
-        <Route
-          path="/crediantals"
-          element={<PrivateRoute element={<Crediantals />} />}
-        />
+        {/* Protected routes */}
+        <Route path="/userhome" element={<PrivateRoute isAuthenticated={isAuthenticated}><UserHome onverify={handleVerify} /></PrivateRoute>} />
+        <Route path="/createquestions" element={<PrivateRoute isAuthenticated={isAuthenticated}><CreateQuestions /></PrivateRoute>} />
+        <Route path="/uploadeddata" element={<PrivateRoute isAuthenticated={isAuthenticated}><UploadedData /></PrivateRoute>} />
+        <Route path="/storedashboard" element={<PrivateRoute isAuthenticated={isAuthenticated}><StoreDashboard marketname={marketname} setStorename={setStorename} /></PrivateRoute>} />
+        <Route path="/detaileddata" element={<PrivateRoute isAuthenticated={isAuthenticated}><DetailedData storename={storename} /></PrivateRoute>} />
+        <Route path="/msupload" element={<PrivateRoute isAuthenticated={isAuthenticated}><MarketStructure /></PrivateRoute>} />
+        <Route path="/dmdashboard" element={<PrivateRoute isAuthenticated={isAuthenticated}><DMDashboard setStorename={setStorename} /></PrivateRoute>} />
+        <Route path="/marketdashboard" element={<PrivateRoute isAuthenticated={isAuthenticated}><MarketDashboard setStorename={setStorename} /></PrivateRoute>} />
+        <Route path="/questions" element={isVerified || localStorage.getItem('isVerified') ? <PrivateRoute isAuthenticated={isAuthenticated}><Questions /></PrivateRoute> : <Navigate to="/userhome" replace />} />
+        <Route path="/compliancequestions" 
+        element={isVerified || localStorage.getItem('isVerified') ? 
+        <PrivateRoute isAuthenticated={isAuthenticated}><ComplianceQuestions /></PrivateRoute> : <Navigate to="/userhome" replace />} />
+        <Route path="/resetpassword" element={<PrivateRoute isAuthenticated={isAuthenticated}><UpdatePassword /></PrivateRoute>} />
+        <Route path="/admindashboard" element={<PrivateRoute isAuthenticated={isAuthenticated}><AdminDashboard setMarketname={setMarketname} /></PrivateRoute>} />
+        <Route path="/credentials" element={<PrivateRoute isAuthenticated={isAuthenticated}><Credentials /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   );

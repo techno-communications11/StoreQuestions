@@ -7,7 +7,7 @@ import validatingNtid from './Validatingntid'
 import { jwtDecode } from "jwt-decode"; // used to decode jwt(json web token) it means it will get data from encrypted token
 import { IoIosTime } from "react-icons/io";
 
-const UserHome = ({ onverify }) => {
+const MngEvg = ({ onverify }) => {
     const [showModal, setShowModal] = useState(false);
     const [modalContent, setModalContent] = useState("");
     const [ntid, setNtid] = useState('');
@@ -23,7 +23,7 @@ const UserHome = ({ onverify }) => {
 
     const openModal = (type) => { //opening the modal
         setError(false) // setting error to default state
-        setModalContent(type === "checklist" ? "Daily Checklist" : "Compliance Checklist");
+        setModalContent(type === "checklist" ? "Morning Check List" : "Evening Checklist List");
         setShowModal(true); //making true
     };
 
@@ -50,10 +50,10 @@ const UserHome = ({ onverify }) => {
                 setIsVerifying(false); // End verification process
                 setTimeout(() => {
                     // Wait for a bit before navigating
-                    if (modalContent === 'Daily Checklist') {
-                        navigate("/mngevg");
+                    if (modalContent === 'Morning Check List') {
+                        navigate("/morning");
                     } else {
-                        navigate("/compliancequestions");
+                        navigate("/questions");
                     }
                 }, 2000); // 2 seconds delay for showing username
             }, 1000); // 1 second delay before showing the name
@@ -63,14 +63,13 @@ const UserHome = ({ onverify }) => {
         }
     };
     
-    const handlenavigate=()=>{
-        navigate('/mngevg')
+   
 
-    }
+    
 
     return (
         <div  style={{
-            background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
+            background: "linear-gradient(135deg,rgb(239, 248, 229) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
           }}>
             <Container fluid className=" d-flex flex-column  p-4">
                 {/* Header Section */}
@@ -80,7 +79,7 @@ const UserHome = ({ onverify }) => {
                     </h2>
                     <div className="header-divider"></div>
                     <h3 className="section-title fw-bold">
-                        Daily Check List & Compliance Check List
+                        Morning Check List & Evening Check List
                     </h3>
                 </div>
 
@@ -94,14 +93,14 @@ const UserHome = ({ onverify }) => {
                                     <FaClipboardList className="feature-icon" />
                                 </div>
                                 <Card.Title className="fw-bold text-uppercase mt-3">
-                                    Daily Check List
+                                    Morning Check List
                                 </Card.Title>
                                 <Card.Text className="text-muted mb-4">
-                                    Organize and track your daily responsibilities efficiently.
+                                    Organize and track your daily Morning responsibilities efficiently.
                                     Stay on top of tasks with our comprehensive checklist system.
                                 </Card.Text>
-                                <button onClick={handlenavigate} className="btn btn-primary mt-auto fw-bold action-button">
-                                    View Checklist
+                                <button onClick={() => openModal("checklist")} className="btn btn-primary mt-auto fw-bold action-button">
+                                    View Morning Check List
                                 </button>
                             </Card.Body>
                         </Card>
@@ -115,14 +114,14 @@ const UserHome = ({ onverify }) => {
                                     <FaCheckCircle className="feature-icon" />
                                 </div>
                                 <Card.Title className="fw-bold text-uppercase mt-3">
-                                    Compliance Check List
+                                    Evening Check List
                                 </Card.Title>
                                 <Card.Text className="text-muted mb-4">
-                                    Stay compliant with industry regulations and guidelines.
-                                    Monitor and maintain regulatory requirements effectively.
+                                Organize and track your daily Evening responsibilities efficiently.
+                                Stay on top of tasks with our comprehensive checklist system.
                                 </Card.Text>
                                 <button onClick={() => openModal("compliance")} className="btn btn-primary mt-auto fw-bold action-button">
-                                    View Compliance
+                                    View Evening Check List
                                 </button>
                             </Card.Body>
                         </Card>
@@ -175,4 +174,4 @@ const UserHome = ({ onverify }) => {
     );
 };
 
-export default UserHome;
+export default MngEvg;

@@ -86,7 +86,8 @@ const DetailedData = ({ storename }) => {
 
   const getStatusBadge = (status) => {
     if (!status) return null;
-    const isAccepted = status.toLowerCase() === 'accepted';
+     console.log(status,'ststtststst')
+    const isAccepted = status.toLowerCase() === 'yes';
     return (
       <span className={`badge-custom ${isAccepted ? 'badge-success' : 'badge-danger'}`}>
         {isAccepted ? (
@@ -137,6 +138,7 @@ const DetailedData = ({ storename }) => {
                     <tr className="text-center">
                       <th className="text-white" style={{backgroundColor:'#E10174'}} >SINO</th>
                       <th className="text-white" style={{backgroundColor:'#E10174'}}>Question</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Question Type</th>
                       <th className="text-white" style={{backgroundColor:'#E10174'}}>NTID</th>
                       <th className="text-white" style={{backgroundColor:'#E10174'}}>Image</th>
                       <th className="text-white" style={{backgroundColor:'#E10174'}}>Status</th>
@@ -157,6 +159,7 @@ const DetailedData = ({ storename }) => {
                         >
                           <td  >{index + 1}</td>
                           <td   >{image.Question}</td>
+                          <td   >{image.type==='Daily Question'?image.checklistType:image.type}</td>
                           <td >
                             <span className="d-flex justify-content-center align-items-center ">
                               <BsPerson className="me-2" />
@@ -184,7 +187,7 @@ const DetailedData = ({ storename }) => {
                                 <Button
                                   variant="outline-success"
                                   size="sm"
-                                  onClick={() => handleImageAccept(image.id, 'accepted')}
+                                  onClick={() => handleImageAccept(image.id, 'yes')}
                                 >
                                   <BsCheckCircle className="me-2" />
                                   Accept
@@ -192,7 +195,7 @@ const DetailedData = ({ storename }) => {
                                 <Button
                                   variant="outline-danger"
                                   size="sm"
-                                  onClick={() => handleImageAccept(image.id, 'rejected')}
+                                  onClick={() => handleImageAccept(image.id, 'no')}
                                 >
                                   <BsXCircle className="me-2" />
                                   Reject

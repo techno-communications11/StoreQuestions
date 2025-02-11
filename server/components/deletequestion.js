@@ -2,7 +2,7 @@ import db from "../dbConnection/db.js";
 
 const deleteQuestion = (req, res) => {
   const { id } = req.params;  // Getting id from request params (URL)
-  console.log(req.params)
+  console.log(req.params,'data to delete')
 
   // Query to delete the question from the database by its id
   const query = 'DELETE FROM questions WHERE id = ?';

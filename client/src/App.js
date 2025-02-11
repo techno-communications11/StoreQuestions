@@ -6,7 +6,7 @@ import { Login } from "./components/Login";
 import { Register } from "./components/Register";
 import PrivateRoute from "./components/PrivateRoute";
 import MarketStructure from './components/MarketStructure';
-import Questions from './components/Questions';
+import Evening from './components/Evening';
 import UpdatePassword from './components/updatepassword';
 import UserHome from './components/UserHome';
 import Credentials from './components/Credentials';
@@ -19,6 +19,8 @@ import MarketDashboard from './components/MarketDashboard';
 import UploadedData from './components/UploadedData';
 import CreateQuestions from './components/CreateQuestions';
 import { jwtDecode } from 'jwt-decode'; // Import the jwt-decode library
+import MngEvg from './components/MngEng';
+import Morning from './components/Morning';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -114,6 +116,9 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         {/* Protected routes */}
+        <Route path="/mngevg" element={<PrivateRoute isAuthenticated={isAuthenticated}><MngEvg onverify={handleVerify} /></PrivateRoute>} />
+        <Route path="/morning" element={isVerified || localStorage.getItem('isVerified') ? <PrivateRoute isAuthenticated={isAuthenticated}><Morning /></PrivateRoute> : <Navigate to="/userhome" replace />} />
+
         <Route path="/userhome" element={<PrivateRoute isAuthenticated={isAuthenticated}><UserHome onverify={handleVerify} /></PrivateRoute>} />
         <Route path="/createquestions" element={<PrivateRoute isAuthenticated={isAuthenticated}><CreateQuestions /></PrivateRoute>} />
         <Route path="/uploadeddata" element={<PrivateRoute isAuthenticated={isAuthenticated}><UploadedData /></PrivateRoute>} />
@@ -122,7 +127,7 @@ function App() {
         <Route path="/msupload" element={<PrivateRoute isAuthenticated={isAuthenticated}><MarketStructure /></PrivateRoute>} />
         <Route path="/dmdashboard" element={<PrivateRoute isAuthenticated={isAuthenticated}><DMDashboard setStorename={setStorename} /></PrivateRoute>} />
         <Route path="/marketdashboard" element={<PrivateRoute isAuthenticated={isAuthenticated}><MarketDashboard setStorename={setStorename} /></PrivateRoute>} />
-        <Route path="/questions" element={isVerified || localStorage.getItem('isVerified') ? <PrivateRoute isAuthenticated={isAuthenticated}><Questions /></PrivateRoute> : <Navigate to="/userhome" replace />} />
+        <Route path="/questions" element={isVerified || localStorage.getItem('isVerified') ? <PrivateRoute isAuthenticated={isAuthenticated}><Evening /></PrivateRoute> : <Navigate to="/userhome" replace />} />
         <Route path="/compliancequestions" 
         element={isVerified || localStorage.getItem('isVerified') ? 
         <PrivateRoute isAuthenticated={isAuthenticated}><ComplianceQuestions /></PrivateRoute> : <Navigate to="/userhome" replace />} />

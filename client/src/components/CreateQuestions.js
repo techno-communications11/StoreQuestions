@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Button, Form,Alert  } from "react-bootstrap";
-import { 
-  FaQuestionCircle, 
-  FaTrashAlt, 
-  FaPlusCircle,
-  FaCheckCircle 
-} from "react-icons/fa";
+import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
+import { FaTrashAlt, FaPlusCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const CreateQuestions = () => {
@@ -13,229 +8,248 @@ const CreateQuestions = () => {
   const [questionText, setQuestionText] = useState("");
   const [questions, setQuestions] = useState([]);
   const [alertMessage, setAlertMessage] = useState(null);
-   
+  const [dailyChecklistType, setDailyChecklistType] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Fetch existing questions on component mount
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_BASE_URL}/getQuestion`);
-        if (response.ok) {
-          const data = await response.json();
-          setQuestions(data.questions); // Assuming the API returns an array of questions under 'questions'
-        } else {
-          console.error("Failed to fetch questions.");
-        }
+        if (!response.ok) throw new Error("Failed to fetch questions");
+        const data = await response.json();
+        setQuestions(data.questions || []);
       } catch (error) {
         console.error("Error fetching questions:", error);
+        setAlertMessage({ type: "danger", text: "Failed to load questions." });
       }
     };
-
     fetchQuestions();
   }, []);
 
+  // Handle creating a new question
+  const handleCreateQuestion = async () => {
+    if (!questionType || !questionText) {
+      setAlertMessage({ type: "warning", text: "Please fill in all fields." });
+      return;
+    }
 
-  
+    if (questionType === "Daily Question" && !dailyChecklistType) {
+      setAlertMessage({
+        type: "warning",
+        text: "Please select a checklist type for Daily Questions.",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    const tempId = Date.now(); // Temporary ID for optimistic updates
+    const newQuestion = {
+      id: tempId,
+      type: questionType,
+      checklistType: questionType === "Daily Question" ? dailyChecklistType : "",
+      Question: questionText,
+    };
+
+    // Optimistically update the UI
+    setQuestions([newQuestion, ...questions]);
+
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/addQuestion`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newQuestion),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "An unexpected error occurred.");
+      }
+
+      const createdQuestion = await response.json();
+
+      // Replace the temporary question with the server's response
+      setQuestions((prevQuestions) =>
+        prevQuestions.map((q) =>
+          q.id === tempId
+            ? { ...createdQuestion.question, id: createdQuestion.question.id } // Use the server-provided ID
+            : q
+        )
+      );
+
+      // Clear form fields and show success message
+      setQuestionType("");
+      setQuestionText("");
+      setDailyChecklistType("");
+      setAlertMessage({ type: "success", text: "Question created successfully!" });
+    } catch (error) {
+      console.error("Error creating question:", error);
+      setAlertMessage({ type: "danger", text: error.message });
+
+      // Rollback the optimistic update
+      setQuestions((prevQuestions) => prevQuestions.filter((q) => q.id !== tempId));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle deleting a question
   const handleDeleteQuestion = async (id) => {
     try {
-      // Send DELETE request to the server with the question ID
+      if (!id) {
+        throw new Error("Invalid question ID.");
+      }
+
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/deleteQuestion/${id}`, {
         method: "POST",
       });
-  
-      if (response.ok) {
-        // If the response is successful, remove the deleted question from the state
-        setQuestions(questions.filter((question) => question.id !== id));
-        setAlertMessage({ type: "success", text: "Question deleted successfully!" });
-        setTimeout(() => setAlertMessage(null), 3000);
 
-        console.log("Question deleted successfully!");
-      } else {
-        // If there's an error (e.g., question not found)
-        const data = await response.json();
-        console.error("Error:", data.error || "Failed to delete question");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "An unexpected error occurred.");
       }
+
+      // Remove the deleted question from the state
+      setQuestions(questions.filter((question) => question.id !== id));
+      setAlertMessage({ type: "success", text: "Question deleted successfully!" });
     } catch (error) {
       console.error("Error deleting question:", error);
+      setAlertMessage({ type: "danger", text: error.message });
     }
   };
-  
-  
-
-  const handleQuestionTypeChange = (e) => {
-    setQuestionType(e.target.value);
-  };
-
-  const handleQuestionTextChange = (e) => {
-    setQuestionText(e.target.value);
-  };
-
-  const handleCreateQuestion = async () => {
-    if (questionType && questionText) {
-      try {
-        const newQuestion = {
-          type: questionType,
-          Question: questionText,
-        };
-  
-        // Sending the newQuestion data to the server
-        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/addQuestion`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newQuestion),
-        });
-  
-        // Assuming server response is successful, update the state
-        if (response.ok) {
-          const createdQuestion = await response.json();
-          setQuestions([ createdQuestion.question,...questions]); // Append the new question to the list
-          
-          // Clear the form fields
-          setQuestionType("");
-          setQuestionText("");
-        } else {
-          console.error("Failed to create question");
-        }
-      } catch (error) {
-        console.error("Error creating question:", error);
-      }
-    } else {
-      alert("Please fill in all fields.");
-    }
-  };
-
-  
 
   return (
     <Container fluid className="bg-light min-vh-100">
-       
+      {/* Header Section */}
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className=" d-flex justify-content-center align-items-center text-white  mb-3" style={{
-          backgroundImage: "url(/question.jpg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          height: "150px",
-          width: "99.5%",
-          opacity: "0.8",
-        }}>
-            <h1 style={{fontSize:'100px'}} className="fw-bolder">
-            Create Questions
-            </h1>
-           
-          
-        </div>
-      </motion.div>
-
-      <motion.div
-        className="card"
-        style={{
-            background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
+        <div
+          className="d-flex justify-content-center align-items-center text-white mb-3"
+          style={{
+            backgroundImage: "url(/question.jpg)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            height: "150px",
+            width: "100%",
+            opacity: "0.8",
           }}
-        whileHover={{ scale: 1.02 }}
-        transition={{ duration: 0.3 }}
-      >
-        <div className="card-body p-4">
-          <Row className="align-items-end g-3">
-            <Col md={2} xs={12}>
-              <Form.Group>
-                <Form.Select 
-                  value={questionType}
-                  onChange={handleQuestionTypeChange}
-                  className="border-pink"
-                >
-                  <option value="">Select Question Type</option>
-                  <option value="Daily Question">Daily Questions</option>
-                  <option value="Compliance Question">Compliance Questions</option>
-                </Form.Select>
-              </Form.Group>
-            </Col>
-            <Col md={9} xs={12}>
-              <Form.Group>
-                <Form.Control
-                  as="textarea"
-                  value={questionText}
-                  onChange={handleQuestionTextChange}
-                  rows={1}
-                  placeholder="Enter your question here..."
-                  className="border-pink"
-                />
-              </Form.Group>
-            </Col>
-            <Col md={1} xs={12}>
-              <Button
-                className="w-100 btn-pink"
-                onClick={handleCreateQuestion}
-                style={{ backgroundColor: "#FF69B4", borderColor: "#FF69B4" }}
-              >
-                <FaPlusCircle className="me-2" />
-                Create
-              </Button>
-            </Col>
-          </Row>
+        >
+          <h1 className="fw-bolder" style={{ fontSize: "100px" }}>
+            Create Questions
+          </h1>
         </div>
       </motion.div>
 
-      
-
-      <motion.div
-        className="mt-1"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        style={{ maxHeight:'500px', overflowY:'auto' }}
-      >
-         {alertMessage && (
-        <Alert variant={alertMessage.type} className="bg-success text-white
-        " onClose={() => setAlertMessage(null)} dismissible>
+      {/* Alert Message */}
+      {alertMessage && (
+        <Alert variant={alertMessage.type} onClose={() => setAlertMessage(null)} dismissible>
           {alertMessage.text}
         </Alert>
       )}
-       
+
+      {/* Form Section */}
+      <motion.div
+        className="card p-4"
+        whileHover={{ scale: 1.02 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Row className="align-items-end g-3">
+          {/* Question Type Dropdown */}
+          <Col md={2}>
+            <Form.Select
+              value={questionType}
+              onChange={(e) => setQuestionType(e.target.value)}
+            >
+              <option value="">Select Question Type</option>
+              <option value="Daily Question">Daily Questions</option>
+              <option value="Compliance Question">Compliance Questions</option>
+            </Form.Select>
+          </Col>
+
+          {/* Daily Checklist Type Dropdown */}
+          {questionType === "Daily Question" && (
+            <Col md={2}>
+              <Form.Select
+                value={dailyChecklistType}
+                onChange={(e) => setDailyChecklistType(e.target.value)}
+              >
+                <option value="">Select Checklist Type</option>
+                <option value="Morning Question">Morning Question</option>
+                <option value="Evening Question">Evening Question</option>
+              </Form.Select>
+            </Col>
+          )}
+
+          {/* Question Text Input */}
+          <Col md={7}>
+            <Form.Control
+              as="textarea"
+              value={questionText}
+              onChange={(e) => setQuestionText(e.target.value)}
+              rows={1}
+              placeholder="Enter your question here..."
+            />
+          </Col>
+
+          {/* Create Button */}
+          <Col md={1}>
+            <Button
+              onClick={handleCreateQuestion}
+              disabled={loading}
+              style={{ backgroundColor: "#FF69B4", borderColor: "#FF69B4" }}
+            >
+              <FaPlusCircle className="me-2" />
+              {loading ? "Creating..." : "Create"}
+            </Button>
+          </Col>
+        </Row>
+      </motion.div>
+
+      {/* Questions List */}
+      <motion.div
+        className="mt-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
         {questions.length === 0 ? (
           <p className="text-muted text-center">No questions created yet.</p>
         ) : (
-          questions.sort((a,b)=>b.id-a.id).map((question) => (
+          questions.map((question) => (
             <motion.div
               key={question.id}
-              className="card"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 20, opacity: 0 }}
+              className="card mt-2 p-3"
               whileHover={{ scale: 1.01 }}
-            //   style={{ backgroundColor: "#FFF0F5" }}
-              
             >
-              <div className="card-body">
-                <Row className="align-items-center p-2">
-                  <Col xs={12} md={8} lg={10} className="d-flex flex-column flex-md-row gap-3">
-                    <p className="mb-1 fs-6 fs-md-3" lg={4}>
-                      <strong className=" text-dark">Question Type:</strong> 
-                      <span className=" text-dark"> {question.type}</span>
+              <Row className="align-items-center">
+                <Col md={10}>
+                  <p>
+                    <strong>Question Type:</strong> {question.type}
+                  </p>
+                  {question.checklistType && (
+                    <p>
+                      <strong>Checklist Type:</strong> {question.checklistType}
                     </p>
-                    <p className="mb-0 fs-6 fs-md-3" lg={6}>
-                      <strong className=" text-dark">Question:</strong> 
-                      <span className=" text-dark"> {question.Question}</span>
-                    </p>
-                  </Col>
-                  <Col xs={12} md={4} lg={2} className="text-md-end mt-3 mt-md-0">
-                    <Button
-                      variant="danger"
-                      onClick={() => handleDeleteQuestion(question.id)}
-                      className="btn-md"
-                    >
-                      <FaTrashAlt className="me-2" />
-                      Delete
-                    </Button>
-                  </Col>
-                </Row>
-              </div>
+                  )}
+                  <p>
+                    <strong>Question:</strong> {question.Question}
+                  </p>
+                </Col>
+                <Col md={2} className="text-md-end">
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDeleteQuestion(question.id)}
+                    aria-label={`Delete question: ${question.Question}`}
+                  >
+                    <FaTrashAlt className="me-2" />
+                    Delete
+                  </Button>
+                </Col>
+              </Row>
             </motion.div>
           ))
         )}

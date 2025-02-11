@@ -13,7 +13,7 @@ const s3Client = new S3Client({
 
 const getImagesDataByStoreName = async (req, res) => {
     const { storename } = req.body; // Extract storename from the request body
-
+ console.log(storename,"store")
     // Validate input
     if (!storename || typeof storename !== "string") {
         return res.status(400).json({ success: false, message: "Invalid storename provided" });
@@ -22,15 +22,15 @@ const getImagesDataByStoreName = async (req, res) => {
     try {
         // Query to get all images data for a store and join with the questions table based on question_id
         const [rows] = await db.promise().query(
-            `SELECT i.*, m.storename, q.Question
+            `SELECT i.*, m.storename, q.Question,q.type,q.checklistType
              FROM images i
-             JOIN credentials c ON i.ntid = c.ntid
-             JOIN marketStructure m ON c.doorcode = m.doorcode
+             JOIN users u ON i.userid = u.id
+             JOIN marketStructure m ON u.email = m.storeemail
              JOIN questions q ON q.id = i.question_id  -- Assuming images table has question_id
              WHERE m.storename = ?`,
             [storename]
         );
-
+ console.log(rows)
         // If no rows are found, return an empty array
         if (!rows || rows.length === 0) {
             return res.json({ success: true, data: [] });
@@ -66,7 +66,7 @@ const getImagesDataByStoreName = async (req, res) => {
                 }
             })
         );
-
+ console.log(imagesWithUrls,"uelslsk")
         // Send the result back with pre-signed URLs
         res.json({ success: true, data: imagesWithUrls });
     } catch (err) {

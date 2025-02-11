@@ -31,11 +31,13 @@ const imageUpload = async (req, res) => {
       return res.status(400).json({ error: "Invalid question provided" });
     }
 
-    const question_id = result[0].id;
+    const question_ids = result[0].id;
+     console.log(question_ids)
 
     // Insert the URL into the database
-    const insertQuery = 'INSERT INTO images (userid, url, ntid, question_id) VALUES (?, ?, ?, ?)';
-    const [insertResult] = await db.promise().query(insertQuery, [id, imageUrl, ntid, question_id]);
+    const insertQuery = 'INSERT INTO images(userid, url, ntid, question_id) VALUES (?, ?, ?, ?)';
+    const [insertResult] = await db.promise().query(insertQuery, [id, imageUrl, ntid, question_ids]);
+    console.log(insertResult[0],"rere")
 
     if (insertResult.affectedRows === 1) {
       // File successfully uploaded and URL stored in the database

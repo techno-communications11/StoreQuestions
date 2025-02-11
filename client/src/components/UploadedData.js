@@ -31,7 +31,7 @@ const UploadedData = () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadeddata`, { //api to get response from server  with await means it waits until the response 
           method: "POST", //post method in crud operarions
-          headers: { 
+          headers: {
             "Content-Type": "application/json", //header that we need to make sure only send the json format to send data
           },
           body: JSON.stringify({ id }),//converting the data to json
@@ -39,8 +39,10 @@ const UploadedData = () => {
 
         const result = await response.json();//converting the json to  js object
 
+
         if (result.success) { //check  the result is success or not
-          setData(result.data); //setting the data
+          setData(result.data); //setting the data 
+           console.log(result.data)
         } else {
           setError(result.message || 'No data found for this user');
         }
@@ -119,9 +121,10 @@ const UploadedData = () => {
                         <td className="py-3">{index + 1}</td>
                         <td className="py-3">{item.ntid}</td>
                         <td className="py-3">
-                          {item.image_verified ? (
+                          {item.image_verified === null && <span className='badge bg-warning'>not verified</span>}
+                          {(item.image_verified === 'yes' && item.image_verified !== null) && (
                             <FaCheck className="text-success" />
-                          ) : (
+                          )}{(item.image_verified === 'no' && item.image_verified !== null)&&(
                             <FaTimes className="text-danger" />
                           )}
                         </td>

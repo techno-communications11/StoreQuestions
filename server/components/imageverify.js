@@ -6,7 +6,7 @@ const imageverify = async (req, res) => {
   try {
     // Extract data and id from the request body
     const { status, id } = req.body;
-    console.log(req.body);
+    console.log(req.body,'ssssssssssssss');
 
     // Validate input
     if (!status || !id) {
@@ -14,7 +14,7 @@ const imageverify = async (req, res) => {
     }
 
     // Update the data value based on the input
-    const updatedData = status === 'accepted' ? 'yes' : 'no';
+    const updatedData = status;
     console.log(updatedData, 'data');
 
     // Define the SQL query to update the image verification status
@@ -51,12 +51,12 @@ const imageverify = async (req, res) => {
     let emailBody = `
       <h1 style="font-family: Arial, sans-serif; color: #333;">Image Verification Status</h1>
       <p>Dear User,</p>
-      <p>Your image verification status has been updated to: <strong>${status === 'accepted' ? 'Accepted' : 'Rejected'}</strong>.</p>
+      <p>Your image verification status has been updated to: <strong>${status === 'yes' ? 'Accepted' : 'Rejected'}</strong>.</p>
       <p>For the image uploaded on ${createdAt}</p>
     `;
 
     // If the status is 'rejected', fetch the related question from the Questions table
-    if (status === 'rejected') {
+    if (status === 'no') {
       const questionQuery = `
         SELECT Question
         FROM questions
@@ -87,7 +87,7 @@ const imageverify = async (req, res) => {
     await resend.emails.send({
       from: "ticketing@techno-communications.com", // Sender email
       to: userEmail,  // Recipient email
-      subject: `Image Verification Status: ${status === 'accepted' ? 'Accepted' : 'Rejected'}`, // Subject
+      subject: `Image Verification Status: ${status === 'yes' ? 'Accepted' : 'Rejected'}`, // Subject
       html: emailBody,  // HTML email body
     });
 

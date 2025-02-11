@@ -9,7 +9,7 @@ import {
   FaSpinner,
 } from 'react-icons/fa'; // Importing React Icons
 
-const Questions = () => {
+const Morning = () => {
   const [stores, setStores] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState('');
@@ -154,12 +154,13 @@ const Questions = () => {
         </div>
       ) : (
         <>
-          <h1 className="text-center fw-bolder mb-4" style={{color:'#E10174'}}>Daily Check List</h1>
+          <h1 className="text-center fw-bolder mb-4" style={{color:'#E10174'}}>Morning Check List</h1>
 
           {/* Table */}
           <table className="table table-striped table-hover">
             <thead className="table-light">
               <tr >
+              <th  className='text-white' style={{backgroundColor:'#E10174'}}>SINO</th>
                 <th  className='text-white' style={{backgroundColor:'#E10174'}}>Question</th>
                 <th className='text-white' style={{backgroundColor:'#E10174'}}>Check</th>
                 <th  className='text-white' style={{backgroundColor:'#E10174'}}>Validate</th>
@@ -167,8 +168,9 @@ const Questions = () => {
             </thead>
             <tbody>
               {stores.length > 0 ? (
-                stores.filter((store) => store.type === 'Daily Question').map((store, index) => (
+                stores.filter((store) => store.checklistType=== 'Morning Question').map((store, index) => (
                   <tr key={index}>
+                    <td>{index+1}</td>
                     <td>{store.question?.toLowerCase()}</td>
                     <td>
                       <div className="form-check">
@@ -256,4 +258,4 @@ const Questions = () => {
   );
 };
 
-export default Questions;
+export default Morning;

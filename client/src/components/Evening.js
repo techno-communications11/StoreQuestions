@@ -9,7 +9,7 @@ import {
   FaSpinner,
 } from 'react-icons/fa'; // Importing React Icons
 
-const ComplianceQuestions = () => {
+const Evening = () => {
   const [stores, setStores] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState('');
@@ -27,6 +27,7 @@ const ComplianceQuestions = () => {
       } else {
         const data = await response.json();
         setStores(data);
+         console.log(data,'dddddd')
         // Initialize row states
         const initialState = data.reduce((acc, store) => {
           acc[store.question] = { checked: false, file: null };
@@ -77,7 +78,6 @@ const ComplianceQuestions = () => {
       });
       if (response.ok) {
         setSuccessMessage('File Uploaded Successfully');
-        setTimeout(() => setSuccessMessage(''), 3000);
         setOpenModal(false);
         setRowStates((prevState) => ({
           ...prevState,
@@ -95,6 +95,7 @@ const ComplianceQuestions = () => {
   const handleCloseModal = () => {
     setOpenModal(false);
     setErrorMessage('');
+    setSuccessMessage(''); // Clear success message as well
   };
 
   const handleCheckboxChange = (storename) => (e) => {
@@ -118,16 +119,15 @@ const ComplianceQuestions = () => {
   };
 
   return (
-    <div className="container-fluid mt-5" >
+    <div className="container-fluid mt-5">
       {/* Success Message */}
       {successMessage && (
-        <div className="alert bg-success text-white text-center" role="alert">
+        <div className="alert alert-success text-center" role="alert">
           <FaCheckCircle className="me-2" />
           {successMessage}
           <button
             type="button"
-           
-            className="btn-close  float-end"
+            className="btn-close float-end"
             onClick={() => setSuccessMessage('')}
           ></button>
         </div>
@@ -154,22 +154,21 @@ const ComplianceQuestions = () => {
         </div>
       ) : (
         <>
-          <h1 className="text-center mb-4 fw-bolder" style={{color:'#E10174'}}>Compliance Check List</h1>
+          <h1 className="text-center fw-bolder mb-4" style={{color:'#E10174'}}>Evening Check List</h1>
 
           {/* Table */}
           <table className="table table-striped table-hover">
             <thead className="table-light">
-              <tr>
-              <th className='text-white' style={{backgroundColor:'#E10174'}}>SINO</th>
-
-                <th className='text-white' style={{backgroundColor:'#E10174'}}>Question</th>
+              <tr >
+              <th  className='text-white' style={{backgroundColor:'#E10174'}}>SINO</th>
+                <th  className='text-white' style={{backgroundColor:'#E10174'}}>Question</th>
                 <th className='text-white' style={{backgroundColor:'#E10174'}}>Check</th>
-                <th className='text-white' style={{backgroundColor:'#E10174'}}>Validate</th>
+                <th  className='text-white' style={{backgroundColor:'#E10174'}}>Validate</th>
               </tr>
             </thead>
             <tbody>
               {stores.length > 0 ? (
-                 stores.filter((store) => store.type === 'Compliance Question').map((store, index) => (
+                stores.filter((store) => store.checklistType=== 'Evening Question').map((store, index) => (
                   <tr key={index}>
                     <td>{index+1}</td>
                     <td>{store.question?.toLowerCase()}</td>
@@ -206,8 +205,8 @@ const ComplianceQuestions = () => {
 
           {/* Modal */}
           {openModal && (
-            <div className="modal show shadow-lg d-block" tabIndex="-1" role="dialog">
-              <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal  show d-block" tabIndex="-1" role="dialog">
+              <div className="modal-dialog  modal-dialog-centered" role="document">
                 <div className="modal-content shadow-lg">
                   <div className="modal-header bg-primary text-white">
                     <h5 className="modal-title">{selectedStore}</h5>
@@ -259,4 +258,4 @@ const ComplianceQuestions = () => {
   );
 };
 
-export default ComplianceQuestions;
+export default Evening;

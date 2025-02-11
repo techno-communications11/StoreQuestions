@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import { Col } from "react-bootstrap";
 
 const Login = ({ onLogin }) => {
   const [credentials, setCredentials] = useState({
@@ -35,7 +36,7 @@ const Login = ({ onLogin }) => {
 
       if (response.status === 200) {
         localStorage.setItem("token", data.token);
-        
+
 
         const token = localStorage.getItem("token");
         let role = "";
@@ -144,17 +145,26 @@ const Login = ({ onLogin }) => {
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="col-md-6 d-flex justify-content-center align-items-center p-5"
+          className="col-md-6 d-flex justify-content-center align-items-center p-1 mt-3"
         >
-          <div
-            className="card shadow-lg w-75 border-0 rounded-3"
-            style={{
-              background: 'rgba(255, 255, 255, 0.9)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(225, 1, 116, 0.1)'
-            }}
+          <Col
+            xs={12} // Full width on extra small screens
+            md={8}// 1/3 width on medium screens
+            lg={8}//1/3 width on large screens
+            className="card shadow-lg rounded-4 mt-xs-4"
           >
-            <div className="card-body p-5" >
+            <div
+              className="card shadow-lg rounded-3"
+              style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(225, 1, 116, 0.1)',
+              }}
+            >
+              {/* Card content goes here */}
+            </div>
+
+            <div className="card-body p-4">
               {error && (
                 <motion.div
                   initial={{ y: -20, opacity: 0 }}
@@ -233,7 +243,7 @@ const Login = ({ onLogin }) => {
                 </motion.button>
               </form>
             </div>
-          </div>
+          </Col>
         </motion.div>
       </div>
     </motion.div>

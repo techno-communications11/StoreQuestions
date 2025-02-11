@@ -17,30 +17,30 @@ const UploadedData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const token = localStorage.getItem('token');
-  let id;
-  if (token) {
-    id = jwtDecode(token).id;
+  const token = localStorage.getItem('token'); //getting the token from the localstorage
+  let id; //declaring the id
+  if (token) { //cheaching the token  is present or not
+    id = jwtDecode(token).id; //if present  initialize  the id
   }
 
-  useEffect(() => {
-    const fetchMarketData = async () => {
-      setLoading(true);
-      setError(null);
+  useEffect(() => { //useEfect is a hook to fetch data or subscription or highligt
+    const fetchMarketData = async () => { //declaring the function of es6 witha async to get rid of callbackhell 
+      setLoading(true); //setting the loading to true
+      setError(null); //setting error to null
 
       try {
-        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadeddata`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadeddata`, { //api to get response from server  with await means it waits until the response 
+          method: "POST", //post method in crud operarions
+          headers: { 
+            "Content-Type": "application/json", //header that we need to make sure only send the json format to send data
           },
-          body: JSON.stringify({ id }),
+          body: JSON.stringify({ id }),//converting the data to json
         });
 
-        const result = await response.json();
+        const result = await response.json();//converting the json to  js object
 
-        if (result.success) {
-          setData(result.data);
+        if (result.success) { //check  the result is success or not
+          setData(result.data); //setting the data
         } else {
           setError(result.message || 'No data found for this user');
         }
@@ -51,16 +51,16 @@ const UploadedData = () => {
       }
     };
 
-    if (id) {
-      fetchMarketData();
+    if (id) { //if id
+      fetchMarketData();//call the function
     } else {
       setError("User ID not found in token");
       setLoading(false);
     }
-  }, [id]);
+  }, [id]);//for useEffect it is dependency
 
-  const handleImageClick = (imageUrl) => {
-    window.open(imageUrl, '_blank');
+  const handleImageClick = (imageUrl) => {//es6 function
+    window.open(imageUrl, '_blank'); //to open in new window
   };
 
   if (loading) return (

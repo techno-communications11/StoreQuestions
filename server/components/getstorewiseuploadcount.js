@@ -2,14 +2,14 @@ import db from '../dbConnection/db.js';
 
 const getMarketWiseStoreStatus = async (req, res) => {
   try {
-    // Extract data from the request body and query parameters
-    const {market, startDate, endDate } = req.query;
+    // Extract data from the request query
+    const { market, startDate, endDate } = req.query;
 
     // Validate market input
     if (!market) {
       return res.status(400).json({
         success: false,
-        message: "Market is required in the request body."
+        message: "Market is required in the request query."
       });
     }
 
@@ -58,7 +58,7 @@ const getMarketWiseStoreStatus = async (req, res) => {
       });
     }
 
-    // Send the response
+    // Send the response with query results
     return res.status(200).json({ success: true, data: results });
   } catch (err) {
     // Log the error and send an error response

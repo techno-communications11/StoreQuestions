@@ -134,30 +134,31 @@ const DetailedData = ({ storename }) => {
               >
                 <table className="table table-hover align-middle">
                   <thead className="bg-light">
-                    <tr>
-                      <th className="text-muted">SINO</th>
-                      <th className="text-muted">Question</th>
-                      <th className="text-muted">NTID</th>
-                      <th className="text-muted">Image</th>
-                      <th className="text-muted">Status</th>
-                      <th className="text-muted">Created At</th>
+                    <tr className="text-center">
+                      <th className="text-white" style={{backgroundColor:'#E10174'}} >SINO</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Question</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>NTID</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Image</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Status</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Created At</th>
                     </tr>
                   </thead>
                   <tbody>
                     {imagesData
                       .sort((a, b) => new Date(b.createdat) - new Date(a.createdat))
                       .map((image, index) => (
-                        <motion.tr
+                        <motion.tr 
+                        className="text-center"
                           key={index}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
                           whileHover={{ scale: 1.01 }}
                         >
-                          <td>{index + 1}</td>
-                          <td>{image.Question}</td>
-                          <td>
-                            <span className="d-flex align-items-center">
+                          <td  >{index + 1}</td>
+                          <td   >{image.Question}</td>
+                          <td >
+                            <span className="d-flex justify-content-center align-items-center ">
                               <BsPerson className="me-2" />
                               {image.ntid}
                             </span>
@@ -200,7 +201,7 @@ const DetailedData = ({ storename }) => {
                             )}
                           </td>
                           <td>
-                            <span className="d-flex align-items-center text-muted">
+                            <span className="d-flex justify-content-center align-items-center text-muted">
                               <BsCalendar className="me-2" />
                               {new Date(image.createdat).toLocaleString()}
                             </span>

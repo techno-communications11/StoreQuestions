@@ -130,9 +130,9 @@ const StoreDashboard = ({ marketname, setStorename }) => {
                 <Table hover className="align-middle">
                   <thead className="bg-light">
                     <tr>
-                      <th className="text-muted">SINO</th>
-                      <th className="text-muted">Store Name</th>
-                      <th className="text-muted text-center">Status</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>SINO</th>
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Store Name</th>
+                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Status</th>
                     </tr>
                   </thead>
                   <tbody>

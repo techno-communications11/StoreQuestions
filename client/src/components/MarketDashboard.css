@@ -1,0 +1,76 @@
+/* Custom Pink Theme and Animations */
+:root {
+    --pink-primary: #FF69B4;
+    --pink-light: #FFB6C1;
+    --pink-dark: #FF1493;
+}
+
+.bg-pink {
+    background-color: var(--pink-primary) !important;
+}
+
+.text-pink {
+    color: var(--pink-primary) !important;
+}
+
+.border-pink {
+    border-color: var(--pink-primary) !important;
+}
+
+.bg-light-pink {
+    background-color: var(--pink-light) !important;
+}
+
+.badge {
+    font-size: 0.9em;
+}
+
+
+.store-row {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.store-row:hover {
+    background-color: rgba(255, 105, 180, 0.1);
+    transform: scale(1.01);
+}
+.table-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.table-scroll .table-header {
+    position: sticky;
+    top: 0;
+    background-color: var(--pink-light);
+    z-index: 10;
+}
+
+.table-scroll tbody {
+    /* min-height: 600px; */
+    overflow-y: auto;
+}
+
+.animate-pulse {
+    animation: pulse 1.5s infinite;
+}
+
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.border-pink:focus {
+    border-color: var(--pink-dark);
+    box-shadow: 0 0 0 0.2rem rgba(255, 20, 147, 0.25);
+}

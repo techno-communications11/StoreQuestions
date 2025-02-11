@@ -192,7 +192,8 @@ const CreateQuestions = () => {
         style={{ maxHeight:'500px', overflowY:'auto' }}
       >
          {alertMessage && (
-        <Alert variant={alertMessage.type} className="bg-success" onClose={() => setAlertMessage(null)} dismissible>
+        <Alert variant={alertMessage.type} className="bg-success text-white
+        " onClose={() => setAlertMessage(null)} dismissible>
           {alertMessage.text}
         </Alert>
       )}

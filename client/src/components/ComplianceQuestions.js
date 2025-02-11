@@ -77,6 +77,7 @@ const ComplianceQuestions = () => {
       });
       if (response.ok) {
         setSuccessMessage('File Uploaded Successfully');
+        setTimeout(() => setSuccessMessage(''), 3000);
         setOpenModal(false);
         setRowStates((prevState) => ({
           ...prevState,
@@ -117,15 +118,16 @@ const ComplianceQuestions = () => {
   };
 
   return (
-    <div className="container mt-5">
+    <div className="container-fluid mt-5" >
       {/* Success Message */}
       {successMessage && (
-        <div className="alert alert-success text-center" role="alert">
+        <div className="alert bg-success text-white text-center" role="alert">
           <FaCheckCircle className="me-2" />
           {successMessage}
           <button
             type="button"
-            className="btn-close float-end"
+           
+            className="btn-close  float-end"
             onClick={() => setSuccessMessage('')}
           ></button>
         </div>
@@ -152,15 +154,15 @@ const ComplianceQuestions = () => {
         </div>
       ) : (
         <>
-          <h1 className="text-center mb-4">Daily Check List</h1>
+          <h1 className="text-center mb-4 fw-bolder" style={{color:'#E10174'}}>Compliance Check List</h1>
 
           {/* Table */}
           <table className="table table-striped table-hover">
             <thead className="table-light">
               <tr>
-                <th>Question</th>
-                <th>Check</th>
-                <th>Validate</th>
+                <th className='text-white' style={{backgroundColor:'#E10174'}}>Question</th>
+                <th className='text-white' style={{backgroundColor:'#E10174'}}>Check</th>
+                <th className='text-white' style={{backgroundColor:'#E10174'}}>Validate</th>
               </tr>
             </thead>
             <tbody>
@@ -201,9 +203,9 @@ const ComplianceQuestions = () => {
 
           {/* Modal */}
           {openModal && (
-            <div className="modal show d-block" tabIndex="-1" role="dialog">
+            <div className="modal show shadow-lg d-block" tabIndex="-1" role="dialog">
               <div className="modal-dialog modal-dialog-centered" role="document">
-                <div className="modal-content">
+                <div className="modal-content shadow-lg">
                   <div className="modal-header bg-primary text-white">
                     <h5 className="modal-title">{selectedStore}</h5>
                     <button

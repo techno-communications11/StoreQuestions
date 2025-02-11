@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { 
   FaLock, 
   FaEnvelope, 
@@ -7,7 +7,6 @@ import {
   FaCheckCircle, 
   FaExclamationTriangle 
 } from 'react-icons/fa';
-// import { useMyContext } from '../MyContext';
 
 const UpdatePassword = () => {
   const [userData, setUserData] = useState({ email: '', password: '' });
@@ -15,25 +14,21 @@ const UpdatePassword = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-    // const { setStore } = useMyContext();
-//    useEffect(()=>{
-//     setStore('');
-//    },[])
+  
 
-  const handlePasswordReset = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  const handlePasswordReset = async (e) => { //used es6 function with async and await
+    e.preventDefault(); //makting the function to submit by default before the action to happen
+    setIsSubmitting(true);//setting issubmmit to true for showwing loading
     try {
       // Simulated API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSuccess('Password reset instructions sent to your email');
-      setError('');
-      setUserData({ email: '', password: '' });
+      await new Promise(resolve => setTimeout(resolve, 1000)); //creating the promise  to stuck the sol to 1second it is constructure based promise creation
+      setSuccess('Password reset successfully'); //setting the success
+      setError(''); //settin the error to initial stage to empty
+      setUserData({ email: '', password: '' }); //making the email and passoword to initial stage after the success of the reponse
     } catch (err) {
-      setError('Password reset failed. Please try again.');
+      setError('Password reset failed. Please try again.'); // the setError function is setting the error
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); //finally will print the result or makre sure the code is exicued whether the  catch resolve  errors are not
     }
   };
 
@@ -48,7 +43,7 @@ const UpdatePassword = () => {
       objectFit: "cover" // Ensures the background image covers the area correctly
     }} className="d-flex align-items-center justify-content-center">
     
-      <div  className="card   shadow-lg border-0 col-md-6 col-lg-4">
+      <div  className="card shadow-lg border-0 col-md-6 col-lg-4">
         <div className="card-body p-4 p-md-5">
           {/* Header Section */}
           <div className="text-center mb-4">
@@ -70,7 +65,7 @@ const UpdatePassword = () => {
                 className="form-control form-control-lg ps-5"
                 placeholder="Email address"
                 value={userData.email}
-                onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+                onChange={(e) => setUserData({ ...userData, email: e.target.value })} //oncahnge function with rest opertor getting older data nad adding the new to that
                 required
               />
             </div>

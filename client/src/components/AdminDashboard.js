@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Table, Form, Button, Container, Row, Col, Spinner,Alert } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'; //importing  from react
+import { Card, Table, Form, Button, Container, Row, Col, Spinner,Alert } from 'react-bootstrap'; //importing the  components from bootstrap
+import { useNavigate } from 'react-router-dom'; //importing usenaviage to navigate between pages
 import { BsCalendarDate, BsBuilding, BsCheckCircleFill, BsXCircleFill, 
-         BsArrowRightCircle, BsFilterCircle } from 'react-icons/bs';
+         BsArrowRightCircle, BsFilterCircle } from 'react-icons/bs'; //icons from react-icons
 import { motion } from 'framer-motion';
 
 const AdminDashboard = ({ setMarketname }) => {
@@ -113,6 +113,7 @@ const AdminDashboard = ({ setMarketname }) => {
               </Button>
             </Form>
           </Card.Body>
+          
         </Card>
 
         {loading ? (
@@ -133,10 +134,10 @@ const AdminDashboard = ({ setMarketname }) => {
               <Card.Body>
                 <Table hover className="align-middle">
                   <thead className="bg-light">
-                    <tr>
-                      <th className="text-muted">Market</th>
-                      <th className="text-muted text-center">Stores Completed</th>
-                      <th className="text-muted text-center">Stores Not Completed</th>
+                    <tr >
+                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Market</th>
+                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Stores Completed</th>
+                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Stores Not Completed</th>
                     </tr>
                   </thead>
                   <tbody>

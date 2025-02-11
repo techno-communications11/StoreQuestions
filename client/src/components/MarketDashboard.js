@@ -1,7 +1,25 @@
+import React, { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { useEffect, useState } from 'react';
-import { Table, Spinner, Alert, Form, Button } from 'react-bootstrap'; // Importing Bootstrap components
+import { 
+  Table, 
+  Spinner, 
+  Alert, 
+  Form, 
+  Button, 
+  Card, 
+  Container, 
+  Row, 
+  Col 
+} from 'react-bootstrap';
+import { 
+  FaCalendarAlt, 
+  FaStore, 
+  FaCheck, 
+  FaTimes, 
+  FaFilter 
+} from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import './MarketDashboard.css';
 
 const MarketDashboard = ({ setStorename }) => {
     const [marketData, setMarketData] = useState([]);
@@ -14,9 +32,8 @@ const MarketDashboard = ({ setStorename }) => {
     const marketname = jwtDecode(token).market;
 
     const fetchMarketData = async (startDate = '', endDate = '') => {
-        setLoading(true); // Start loading
+        setLoading(true);
         try {
-            // Construct the URL with optional date range
             const url = `${process.env.REACT_APP_BASE_URL}/getstorewiseuploadcount?market=${marketname}&startDate=${startDate}&endDate=${endDate}`;
             const response = await fetch(url, {
                 method: "GET",
@@ -28,19 +45,19 @@ const MarketDashboard = ({ setStorename }) => {
             const data = await response.json();
 
             if (data.success) {
-                setMarketData(data.data); // Set the data received from server
+                setMarketData(data.data);
             } else {
                 setError('No data found for this market');
             }
         } catch (err) {
             setError('Error fetching data');
         } finally {
-            setLoading(false); // Stop loading
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchMarketData(); // Fetch data for the current day on initial load
+        fetchMarketData();
     }, [marketname]);
 
     const handleStore = (storename) => {
@@ -51,68 +68,114 @@ const MarketDashboard = ({ setStorename }) => {
 
     const handleDateFilter = (e) => {
         e.preventDefault();
-        fetchMarketData(startDate, endDate); // Fetch data for the selected date range
+        fetchMarketData(startDate, endDate);
     };
 
     return (
-        <div className="container mt-4">
-            {loading && <Spinner animation="border" variant="primary" />}
-            {error && <Alert variant="danger">{error}</Alert>}
-            <h1 className='text-center text-capitalize'>{marketname?.toLowerCase() || localStorage.getItem('marketname')?.toLowerCase()} Dashboard</h1>
-
-            {/* Date Range Filter */}
-            <Form onSubmit={handleDateFilter} className="mb-3">
-                <Form.Group controlId="startDate" className="mb-3">
-                    <Form.Label>Start Date</Form.Label>
-                    <Form.Control
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
-                </Form.Group>
-                <Form.Group controlId="endDate" className="mb-3">
-                    <Form.Label>End Date</Form.Label>
-                    <Form.Control
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
-                </Form.Group>
-                <Button type="submit" variant="primary">
-                    Apply Filter
-                </Button>
-            </Form>
-
-            {!loading && !error && marketData.length > 0 && (
-                <Table striped bordered hover responsive>
-                    <thead>
-                        <tr>
-                            <td>SINO</td>
-                            <th>Store Name</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {marketData.map((store, index) => (
-                            <tr key={index}>
-                                <td>{index + 1}</td>
-                                <td style={{ cursor: 'pointer' }} onClick={() => handleStore(store.storename)}>
-                                    {store.storename}
-                                </td>
-                                <td>
-                                    <span className={`badge ${store.upload_count >= 1 ? 'bg-success' : 'bg-warning'}`}>
-                                        {store.upload_count >= 1 ? 'Completed' : 'Not Completed'}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
+        <Container fluid className="market-dashboard p-4">
+            {loading && (
+                <div className="text-center my-4">
+                    <Spinner animation="border" variant="pink" />
+                </div>
             )}
-            {!loading && !error && marketData.length === 0 && (
-                <Alert variant="info">No stores found for this market.</Alert>
+
+            {error && (
+                <Alert variant="danger" className="animate-bounce">
+                    {error}
+                </Alert>
             )}
-        </div>
+
+            <Card className="shadow-lg border-pink mb-4">
+                <Card.Header className="bg-pink text-white text-center text-capitalize fs-3">
+                    <FaStore className="me-2 fs-1" />
+                    {marketname?.toLowerCase() || localStorage.getItem('marketname')?.toLowerCase()} Dashboard
+                </Card.Header>
+                <Card.Body>
+                    <Form onSubmit={handleDateFilter} className="mb-4">
+                        <Row>
+                            <Col md={5}>
+                                <Form.Group controlId="startDate" className="mb-3">
+                                    <Form.Label>
+                                        <FaCalendarAlt className="me-2 text-pink" /> Start Date
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="border-pink"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={5}>
+                                <Form.Group controlId="endDate" className="mb-3">
+                                    <Form.Label>
+                                        <FaCalendarAlt className="me-2 text-pink" /> End Date
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="border-pink"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={2} className="d-flex mb-3 align-items-end">
+                                <Button 
+                                    type="submit" 
+                                    variant="pink" 
+                                    className="w-100 animate-pulse"
+                                >
+                                    <FaFilter className="me-2" /> Apply
+                                </Button>
+                            </Col>
+                        </Row>
+                    </Form>
+
+                    {!loading && !error && marketData.length > 0 && (
+                        <div className="table-responsive table-scroll" >
+                            <Table striped hover className="store-table">
+                                <thead className="table-header">
+                                    <tr className='text-center'>
+                                        <th style={{backgroundColor:'#E10174',color:'white'}}>SINO</th>
+                                        <th style={{backgroundColor:'#E10174',color:'white'}}>Store Name</th>
+                                        <th style={{backgroundColor:'#E10174',color:'white'}}>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {marketData.map((store, index) => (
+                                        <tr 
+                                            key={index} 
+                                            className="store-row text-center"
+                                            onClick={() => handleStore(store.storename)}
+                                        >
+                                            <td >{index + 1}</td>
+                                            <td>{store.storename}</td>
+                                            <td>
+                                                {store.status==='Completed' ? (
+                                                    <span className="badge bg-success">
+                                                        <FaCheck className="me-1" /> Completed
+                                                    </span>
+                                                ) : (
+                                                    <span className="badge bg-warning">
+                                                        <FaTimes className="me-1" /> Not Completed
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </div>
+                    )}
+
+                    {!loading && !error && marketData.length === 0 && (
+                        <Alert variant="info" className="text-center">
+                            No stores found for this market.
+                        </Alert>
+                    )}
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };
 

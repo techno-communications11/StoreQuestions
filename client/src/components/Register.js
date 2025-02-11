@@ -3,6 +3,7 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import useMarkets from "../components/useMarkets ";
 import Lottie from "lottie-react";
 import Animation from "./RegisterAnimation.json";
+import { Col } from 'react-bootstrap';
 const Register = () => {
   const [userData, setUserData] = useState({
     email: '',
@@ -101,8 +102,11 @@ const Register = () => {
               style={{ height: "100%", width: "100%" }}
             />
           </div>
-          <div className="col-md-5">
-            <div className="card shadow-lg border-0 rounded-lg p-2">
+          <Col className='col-md-5'>
+            <div className="card shadow-lg border-0 rounded-lg"    xs={12} // Full width on extra small screens
+            md={8}// 1/3 width on medium screens
+            lg={8}//1/3 width on large screens
+            >
               <div className="card-body">
                 {error && <div className="alert alert-danger">{error}</div>}
                 <form onSubmit={handleSubmit}>
@@ -219,7 +223,7 @@ const Register = () => {
                 </form>
               </div>
             </div>
-          </div>
+            </Col>
         </div>
       </div>
     </div>

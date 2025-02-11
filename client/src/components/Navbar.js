@@ -1,27 +1,31 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; //used for decoding the token
+import { jwtDecode } from "jwt-decode"; // Used for decoding the token
 
-const Navbar = ({ onLogout }) => {  // Destructure onLogout from props
-  const [isOpen, setIsOpen] = useState(false); // for navbar open or not when collapse
+const Navbar = ({ onLogout }) => {
+  const [isOpen, setIsOpen] = useState(false); // State for navbar collapse
 
   const handleLogout = () => {
-    onLogout();   // Call the onLogout function passed as prop
-    localStorage.clear(); // Clears the local storage
-    window.location.href = "/"; // Redirect to the home page
+    onLogout(); // Call the onLogout function passed as prop
+    setIsOpen(false); // Close the navbar after logout
   };
 
-  const token = localStorage.getItem("token"); //get token from localstorage
-  let role = ""; //set role empty
+  const token = localStorage.getItem("token"); // Get token from local storage
+  let role = ""; // Set role empty
 
-  if (token) { //check token present or not
-    try {  //error handling try will had code that used to check errors if errors throws to catch
-      const decodedToken = jwtDecode(token); //decoding the  token using jwtdecode
-      role = decodedToken.role;  // Set role from the decoded token
-    } catch (error) { //catching the error
-      console.error("Invalid token:", error); // consoling the error
+  if (token) {
+    try {
+      const decodedToken = jwtDecode(token); // Decode the token
+      role = decodedToken.role; // Set role from the decoded token
+    } catch (error) {
+      console.error("Invalid token:", error); // Handle token decoding errors
     }
   }
+
+  // Function to close the navbar
+  const closeNavbar = () => {
+    setIsOpen(false);
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light shadow">
@@ -39,6 +43,7 @@ const Navbar = ({ onLogout }) => {  // Destructure onLogout from props
                 ? "/marketdashboard"
                 : "/userhome"
             }
+            onClick={closeNavbar} // Close navbar when logo is clicked
           >
             Techno Communications LLC
           </Link>
@@ -47,7 +52,7 @@ const Navbar = ({ onLogout }) => {  // Destructure onLogout from props
         <button
           className="navbar-toggler"
           type="button"
-          onClick={() => setIsOpen(!isOpen)} //when clicked on hamberger icon the  list items open or collapse
+          onClick={() => setIsOpen(!isOpen)} // Toggle navbar collapse
           aria-controls="navbarNav"
           aria-expanded={isOpen}
           aria-label="Toggle navigation"
@@ -56,43 +61,66 @@ const Navbar = ({ onLogout }) => {  // Destructure onLogout from props
         </button>
 
         <div
-          className={`collapse navbar-collapse ${isOpen ? "show" : ""}`} //conditional rendering for collapse 
+          className={`collapse navbar-collapse ${isOpen ? "show" : ""}`} // Conditional rendering for collapse
           id="navbarNav"
         >
           <ul className="navbar-nav ms-auto">
             {role === "user" && (
               <li className="nav-item">
-                <Link className="nav-link fw-medium" to="/uploadeddata">
+                <Link
+                  className="nav-link fw-medium"
+                  to="/uploadeddata"
+                  onClick={closeNavbar} // Close navbar when link is clicked
+                >
                   Uploaded Data
                 </Link>
               </li>
             )}
 
-            {role === "admin" && ( //nav links for admin role
+            {role === "admin" && (
               <>
-              
                 <li className="nav-item">
-                  <Link className="nav-link fw-medium" to="/createquestions">
+                  <Link
+                    className="nav-link fw-medium"
+                    to="/createquestions"
+                    onClick={closeNavbar} // Close navbar when link is clicked
+                  >
                     Questions
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link fw-medium" to="/msupload">
+                  <Link
+                    className="nav-link fw-medium"
+                    to="/msupload"
+                    onClick={closeNavbar} // Close navbar when link is clicked
+                  >
                     Market Structure
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link fw-medium" to="/credentials">
+                  <Link
+                    className="nav-link fw-medium"
+                    to="/credentials"
+                    onClick={closeNavbar} // Close navbar when link is clicked
+                  >
                     Credentials
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link fw-medium" to="/resetpassword">
+                  <Link
+                    className="nav-link fw-medium"
+                    to="/resetpassword"
+                    onClick={closeNavbar} // Close navbar when link is clicked
+                  >
                     Reset Password
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link fw-medium" to="/register">
+                  <Link
+                    className="nav-link fw-medium"
+                    to="/register"
+                    onClick={closeNavbar} // Close navbar when link is clicked
+                  >
                     Register
                   </Link>
                 </li>
@@ -101,8 +129,8 @@ const Navbar = ({ onLogout }) => {  // Destructure onLogout from props
 
             <li className="nav-item">
               <button
-                className="btn btn-danger mx-2 btn-small"
-                onClick={handleLogout} //logout  on click event
+                className="btn btn-danger btn-small w-100"
+                onClick={handleLogout} // Logout and close navbar
               >
                 Logout
               </button>

@@ -13,13 +13,12 @@ const AdminDashboard = ({ setMarketname }) => {
   const [endDate, setEndDate] = useState("");
   const navigate = useNavigate();
 
-  const today = new Date().toISOString().split("T")[0];
 
   const fetchMarketData = async () => {
     setLoading(true);
     try {
-      const start = startDate || today;
-      const end = endDate || today;
+      const start = startDate;
+      const end = endDate;
 
       const response = await fetch(
         `${process.env.REACT_APP_BASE_URL}/getmarketwise?startDate=${start}&endDate=${end}`,
@@ -136,8 +135,7 @@ const AdminDashboard = ({ setMarketname }) => {
                   <thead className="bg-light">
                     <tr >
                       <th className="text-white" style={{backgroundColor:'#E10174'}}>Market</th>
-                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Stores Completed</th>
-                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Stores Not Completed</th>
+                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Completed Count</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -157,12 +155,9 @@ const AdminDashboard = ({ setMarketname }) => {
                         </td>
                         <td className="text-center text-success">
                           <BsCheckCircleFill className="me-2" />
-                          {item.completed_stores_count}
+                          {item.count}
                         </td>
-                        <td className="text-center text-danger">
-                          <BsXCircleFill className="me-2" />
-                          {item.not_completed_stores_count}
-                        </td>
+                       
                       </motion.tr>
                     ))}
                   </tbody>

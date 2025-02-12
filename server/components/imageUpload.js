@@ -10,11 +10,11 @@ const imageUpload = async (req, res) => {
     }
 
     // Get id, ntid, and question from the request body
-    const { id, ntid, question } = req.body;
+    const { storeaddress,ntid, question } = req.body;
     console.log(req.body, "data");
 
-    if (!id || !ntid || !question) {
-      return res.status(400).json({ error: "id, NTID, and question are required" });
+    if (!storeaddress || !ntid || !question) {
+      return res.status(400).json({ error: "storeaddress, NTID, and question are required" });
     }
 
     // Upload the image file to S3
@@ -35,8 +35,8 @@ const imageUpload = async (req, res) => {
      console.log(question_ids)
 
     // Insert the URL into the database
-    const insertQuery = 'INSERT INTO images(userid, url, ntid, question_id) VALUES (?, ?, ?, ?)';
-    const [insertResult] = await db.promise().query(insertQuery, [id, imageUrl, ntid, question_ids]);
+    const insertQuery = 'INSERT INTO images(storeaddress, url, ntid, question_id) VALUES (?, ?, ?, ?)';
+    const [insertResult] = await db.promise().query(insertQuery, [storeaddress, imageUrl, ntid, question_ids]);
     console.log(insertResult[0],"rere")
 
     if (insertResult.affectedRows === 1) {

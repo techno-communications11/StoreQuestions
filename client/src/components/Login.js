@@ -58,9 +58,7 @@ const Login = ({ onLogin }) => {
 
         } else if (role === 'district_manager') {
           navigate('/dmdashboard')
-        } else {
-          navigate("/userhome");
-        }
+        } 
       } else {
         setError(data.message || "Login failed");
       }

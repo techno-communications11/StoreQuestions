@@ -138,8 +138,8 @@ const DMDashboard = ({ setStorename }) => {
                                 <tr>
                                     <th>SINO</th>
                                     <th>Store Name</th>
-                                    <th>Status</th>
-                                    <th>Created At</th>
+                                    <th>Completed</th>
+                                    <th>Not Completed</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -155,20 +155,19 @@ const DMDashboard = ({ setStorename }) => {
                                         </td>
                                         <td>
                                             <span
-                                                className={`badge ${
-                                                    store.completed === 'Completed'
-                                                        ? 'bg-success'
-                                                        : 'bg-warning'
-                                                }`}
+                                                   
                                             >
-                                                {store.completed === 'Completed' ? 'Completed' : 'Not Completed'}
+                                                {store.completed}
                                             </span>
                                         </td>
                                         <td>
-                                            {store.createdAt
-                                                ? new Date(store.createdAt).toLocaleString()
-                                                : 'N/A'}
+                                            <span
+                                                   
+                                            >
+                                                {store.not_completed}
+                                            </span>
                                         </td>
+                                        
                                     </tr>
                                 ))}
                             </tbody>

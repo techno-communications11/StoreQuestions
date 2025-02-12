@@ -4,8 +4,11 @@ import { FaClipboardList, FaCheckCircle } from "react-icons/fa";
 import "./UserHome.css";
 import { useNavigate } from "react-router-dom";
 import validatingNtid from './Validatingntid'
-import { jwtDecode } from "jwt-decode"; // used to decode jwt(json web token) it means it will get data from encrypted token
 import { IoIosTime } from "react-icons/io";
+import fetchStores from "./fetchStores";
+import { useEffect } from "react";
+import { useRef } from "react";
+import { Form } from "react-bootstrap";
 
 const MngEvg = ({ onverify }) => {
     const [showModal, setShowModal] = useState(false);
@@ -15,11 +18,25 @@ const MngEvg = ({ onverify }) => {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [isVerifying, setIsVerifying] = useState(false); // Track if the NTID is being verified
-    // console.log(username, 'name');
+     const [stores, setStores] = useState([]);
+        const [searchTerm, setSearchTerm] = useState('');
+        const [selectedStore, setSelectedStore] = useState('');
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+        const dropdownRef = useRef(null);
 
-    const token = localStorage.getItem('token'); // or wherever you store the JWT token
-    const decoded = jwtDecode(token); //decoding the token
-    const id = decoded.id; //getting id from token
+    useEffect(() => {
+        const getStoresData = async () => {
+            const data = await fetchStores();
+
+            if (data.error) {
+                setError(data.error);
+            } else {
+                setStores(data);
+            }
+        };
+
+        getStoresData();
+    }, []);
 
     const openModal = (type) => { //opening the modal
         setError(false) // setting error to default state
@@ -28,13 +45,12 @@ const MngEvg = ({ onverify }) => {
     };
 
     const handleNtid = async () => {
-        console.log(ntid, id, "id");
     
         setIsVerifying(true); // Start verification process
     
-        const name = await validatingNtid(ntid, id); // Await the function call
+        const name = await validatingNtid(selectedStore,ntid); // Await the function call
     
-        console.log(name, "Got name from validation");
+        // console.log(name, "Got name from validation");
     
         if (name) {
             setUsername(name.name); // Show name
@@ -63,12 +79,33 @@ const MngEvg = ({ onverify }) => {
         }
     };
     
+   const handleStoreSelect = (store) => {
+           setSelectedStore(store);
+           setSearchTerm(store);
+           setIsDropdownOpen(false);
+       };
+       const filteredStores = stores.filter((store) =>
+        store.storeaddress.toLowerCase().includes(searchTerm.toLowerCase())
+    );
    
+   
+       useEffect(() => {
+           const handleClickOutside = (event) => {
+               if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                   setIsDropdownOpen(false);
+               }
+           };
+   
+           document.addEventListener("mousedown", handleClickOutside);
+           return () => {
+               document.removeEventListener("mousedown", handleClickOutside);
+           };
+       }, []);
 
     
 
     return (
-        <div  style={{
+        <div className="min-vh-100"  style={{
             background: "linear-gradient(135deg,rgb(239, 248, 229) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
           }}>
             <Container fluid className=" d-flex flex-column  p-4">
@@ -153,6 +190,35 @@ const MngEvg = ({ onverify }) => {
                             onChange={(e) => setNtid(e.target.value)}
                             disabled={isVerifying} // Disable input while verifying
                         />
+                           <Form.Group className="mb-3 position-relative mt-2">
+                            <Form.Control
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    setIsDropdownOpen(true);
+                                }}
+                                onFocus={() => setIsDropdownOpen(true)}
+                                disabled={isVerifying}
+                                placeholder="Search for a store"
+                            />
+                            {isDropdownOpen && filteredStores.length > 0 && (
+                                <div ref={dropdownRef} className="dropdown-menu show position-absolute w-100" style={{height:'20rem', overflowY:'auto'}}>
+                                    {filteredStores.map((store, index) => (
+                                        <div
+                                            key={index}
+                                            className="dropdown-item"
+                                            onClick={() => handleStoreSelect(store.storeaddress)}
+                                            style={{ cursor: 'pointer' }}
+                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                        >
+                                            {store.storeaddress}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </Form.Group>
                         <Button
                             variant="success"
                             className="w-100 mt-4"

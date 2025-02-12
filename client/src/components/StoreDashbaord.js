@@ -132,7 +132,8 @@ const StoreDashboard = ({ marketname, setStorename }) => {
                     <tr>
                       <th className="text-white" style={{backgroundColor:'#E10174'}}>SINO</th>
                       <th className="text-white" style={{backgroundColor:'#E10174'}}>Store Name</th>
-                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Status</th>
+                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Completed Count</th>
+                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Not Completed Count</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -145,7 +146,7 @@ const StoreDashboard = ({ marketname, setStorename }) => {
                         whileHover={{ scale: 1.01 }}
                         className="cursor-pointer"
                       >
-                        <td>{index + 1}</td>
+                        <td className='text-success'>{index + 1}</td>
                         <td 
                           onClick={() => handleStore(store.storename)}
                           className="fw-bold"
@@ -154,18 +155,11 @@ const StoreDashboard = ({ marketname, setStorename }) => {
                           <BsArrowRightCircle className="me-2" />
                           {store.storename}
                         </td>
-                        <td className="text-center">
-                          {store.status === 'Completed' ? (
-                            <span className="badge-custom badge-success">
-                              <BsCheckCircleFill className="me-2" />
-                              Completed
-                            </span>
-                          ) : (
-                            <span className="badge-custom badge-warning">
-                              <BsXCircleFill className="me-2" />
-                              Not Completed
-                            </span>
-                          )}
+                        <td className="text-center text-success">
+                          {store.completed_count}
+                        </td>
+                        <td className="text-center text-success">
+                          {store.not_completed_count}
                         </td>
                       </motion.tr>
                     ))}

@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Card, Modal, Button } from "react-bootstrap";
 import { FaClipboardList, FaCheckCircle } from "react-icons/fa";
+import { useRef } from "react";
 import "./UserHome.css";
 import { useNavigate } from "react-router-dom";
 import validatingNtid from './Validatingntid'
-import { jwtDecode } from "jwt-decode"; // used to decode jwt(json web token) it means it will get data from encrypted token
 import { IoIosTime } from "react-icons/io";
+import fetchStores from "./fetchStores";
+import { useEffect } from "react";
+import { Form } from "react-bootstrap";
+import { FaArrowCircleRight } from "react-icons/fa";
+
 
 const UserHome = ({ onverify }) => {
     const [showModal, setShowModal] = useState(false);
@@ -15,11 +20,31 @@ const UserHome = ({ onverify }) => {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [isVerifying, setIsVerifying] = useState(false); // Track if the NTID is being verified
-    // console.log(username, 'name');
+    const [stores, setStores] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedStore, setSelectedStore] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
 
-    const token = localStorage.getItem('token'); // or wherever you store the JWT token
-    const decoded = jwtDecode(token); //decoding the token
-    const id = decoded.id; //getting id from token
+    useEffect(() => {
+        const getStoresData = async () => {
+            const data = await fetchStores();
+
+            if (data.error) {
+                setError(data.error);
+            } else {
+                setStores(data);
+            }
+
+        };
+
+        getStoresData();
+    }, []);
+
+
+    const filteredStores = stores.filter((store) =>
+        store.storeaddress.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const openModal = (type) => { //opening the modal
         setError(false) // setting error to default state
@@ -28,14 +53,13 @@ const UserHome = ({ onverify }) => {
     };
 
     const handleNtid = async () => {
-        console.log(ntid, id, "id");
-    
+
         setIsVerifying(true); // Start verification process
-    
-        const name = await validatingNtid(ntid, id); // Await the function call
-    
-        console.log(name, "Got name from validation");
-    
+
+        const name = await validatingNtid(selectedStore,ntid); // Await the function call
+
+        // console.log(name, "Got name from validation");
+
         if (name) {
             setUsername(name.name); // Show name
             // Debugging log for onverify
@@ -45,7 +69,7 @@ const UserHome = ({ onverify }) => {
             } else {
                 console.error("onverify is not a function or is undefined");
             }
-    
+
             setTimeout(() => {
                 setIsVerifying(false); // End verification process
                 setTimeout(() => {
@@ -62,22 +86,53 @@ const UserHome = ({ onverify }) => {
             setIsVerifying(false); // End verification process if failed
         }
     };
-    
-    const handlenavigate=()=>{
+
+    const handlenavigate = () => {
         navigate('/mngevg')
 
     }
 
+    const handleStoreSelect = (store) => {
+        setSelectedStore(store);
+        setSearchTerm(store);
+        setIsDropdownOpen(false);
+    };
+     const navlogin=()=>{
+        navigate('/login')
+     }
+
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
-        <div  style={{
+        <div  className="min-vh-100" style={{
             background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
-          }}>
+        }}>
             <Container fluid className=" d-flex flex-column  p-4">
+                
                 {/* Header Section */}
+                <Button className="ms-auto btn-lg fw-bolder shadow-lg text-gradient" style={{cursor:'pointer'}} onClick={navlogin}
+            >Login  <FaArrowCircleRight className="text-success shadow-lg" /></Button>
+               
                 <div className="header-section text-center">
                     <h2 className="company-title display-3 fw-bold text-gradient mb-0">
                         Techno Communications LLC
                     </h2>
+                  
+            
+           
+                    
                     <div className="header-divider"></div>
                     <h3 className="section-title fw-bold">
                         Daily Check List & Compliance Check List
@@ -128,23 +183,25 @@ const UserHome = ({ onverify }) => {
                         </Card>
                     </Col>
                 </Row>
+                <Row className="d-flex justify-content-center  mt-2 vh-10">
+    
+</Row>
             </Container>
 
             {/* Modal */}
-            <Modal show={showModal} onHide={
-                () =>
-                 setShowModal(false)
-                 } centered size="md">
-                {username ?
+            <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
+                {username ? (
                     <div className="text-center p-4">
                         <FaCheckCircle size={50} color="green" className="mb-3" /> {/* Verified Icon */}
                         <h4 className="fw-bold text-success">Verified</h4>
                         <p className="fw-semibold text-primary">{username}</p> {/* Styled Name */}
-                        <h4 className="fw-bolder"><IoIosTime className="fs-1" /> Wait a movement ...</h4>
+                        <h4 className="fw-bolder">
+                            <IoIosTime className="fs-1" /> Wait a moment ...
+                        </h4>
                     </div>
-                    :
+                ) : (
                     <Modal.Body className="text-center p-5">
-                        <Modal.Title className="w-100 text-center mb-4 fw-bolder">
+                        <Modal.Title className="w-100 text-center mb-4 fw-bolder text-gradient">
                             {modalContent}
                         </Modal.Title>
                         <input
@@ -154,23 +211,57 @@ const UserHome = ({ onverify }) => {
                             onChange={(e) => setNtid(e.target.value)}
                             disabled={isVerifying} // Disable input while verifying
                         />
+
+                        {/* Fixed Select Dropdown */}
+                        <Form.Group className="mb-3 position-relative mt-2">
+                            <Form.Control
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    setIsDropdownOpen(true);
+                                }}
+                                onFocus={() => setIsDropdownOpen(true)}
+                                disabled={isVerifying}
+                                placeholder="Search for a store address"
+                            />
+                            {isDropdownOpen && filteredStores.length > 0 && (
+                                <div ref={dropdownRef} className="dropdown-menu show position-absolute w-100">
+                                    {filteredStores.map((store, index) => (
+                                        <div
+                                            key={index}
+                                            className="dropdown-item"
+                                            onClick={() => handleStoreSelect(store.storeaddress)}
+                                            style={{ cursor: 'pointer' }}
+                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                        >
+                                            {store.storeaddress}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </Form.Group>
+
+
                         <Button
                             variant="success"
                             className="w-100 mt-4"
                             onClick={handleNtid}
                             disabled={isVerifying} // Disable button while verifying
                         >
-                            {isVerifying ? 'Verifying...' : 'Verify'}
+                            {isVerifying ? "Verifying..." : "Verify"}
                         </Button>
-                        {
-                            error &&
-                            <div class="alert alert-danger mt-2" role="alert">
+
+                        {error && (
+                            <div className="alert alert-danger mt-2" role="alert">
                                 {error}
                             </div>
-                        }
+                        )}
                     </Modal.Body>
-                }
+                )}
             </Modal>
+
         </div>
     );
 };

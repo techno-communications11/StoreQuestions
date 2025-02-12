@@ -57,18 +57,17 @@ const ComplianceQuestions = () => {
       return;
     }
     const ntid = localStorage.getItem('ntid');
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('No token found');
+    const selectedstore = localStorage.getItem('selectedstore');
+    if (!ntid||!selectedstore) {
+      alert('No data found');
       return;
     }
-    const decodedToken = jwtDecode(token); // Decode the token properly
-    const id = decodedToken.id; // Get the ID from the decoded token
+     // Get the ID from the decoded token
     const formData = new FormData();
     formData.append('file', selectedRowState.file);
     formData.append('question', selectedStore);
-    formData.append('id', id);
     formData.append('ntid', ntid);
+    formData.append('storeaddress', selectedstore);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadimage`, {

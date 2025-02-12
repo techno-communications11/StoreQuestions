@@ -24,6 +24,7 @@ const handleMarketStructureFileUpload = (req, res) => {
         doorcode: data['Door Code'],
         Market: data['Market'],
         storeemail:data['Store Email'],
+        storeaddress:data['Store Address'],
       };
        console.log(transformedRow,'datatt')
       results.push(transformedRow);
@@ -39,10 +40,10 @@ const handleMarketStructureFileUpload = (req, res) => {
         }
 
         // Step 2: Insert the new data
-        const insertQuery = 'INSERT INTO marketstructure (storename, dmname, doorcode, Market,storeemail) VALUES (?, ?, ?, ?,?)';
+        const insertQuery = 'INSERT INTO marketstructure (storename, dmname, doorcode, Market,storeemail,storeaddress) VALUES (?, ?, ?, ?,?,?)';
         
         results.forEach((row) => {
-          db.query(insertQuery, [row.mainstore, row.dm, row.doorcode, row.Market, row.storeemail], (err, result) => {
+          db.query(insertQuery, [row.mainstore, row.dm, row.doorcode, row.Market, row.storeemail,row.storeaddress], (err, result) => {
             if (err) {
               console.error('Database insertion failed:', err);
             }

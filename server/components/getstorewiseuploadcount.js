@@ -13,41 +13,42 @@ const getMarketWiseStoreStatus = async (req, res) => {
       });
     }
 
-    // Default to today's date if no date range is provided
+    // Default to all available dates if no date range is provided
     const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-    const start = startDate || today;
-    const end = endDate || today;
+    const start = startDate || '2025-01-01'; // Start of time (or earliest possible date)
+    const end = endDate || today; // Today's date
 
-    console.log("Market:", market); // Debugging: Log the market
-    console.log("Date Range:", { start, end }); // Debugging: Log the date range
+    // Calculate the total number of days in the date range
+    const totalDaysInRange = Math.ceil(
+      (new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)
+    ) + 1; // Add 1 to include both start and end dates
 
-    // Define the SQL query
-    const query = `
+    // Base SQL query
+    let query = `
       SELECT 
-        m.market,
-        m.storename,
-        m.storeemail,
-        CASE 
-          WHEN COUNT(i.userid) > 0 THEN 'Completed'
-          ELSE 'Not Completed'
-        END AS status
-      FROM 
-        marketstructure m
-      LEFT JOIN 
-        users u ON m.storeemail = u.email
-      LEFT JOIN 
-        images i ON u.id = i.userid
-        AND DATE(i.createdat) BETWEEN ? AND ?
-      WHERE 
-        m.market = ?
-      GROUP BY 
-        m.market, m.storename, m.storeemail;
+        ms.storename AS storename,
+        COUNT(DISTINCT CASE WHEN i.url IS NOT NULL THEN DATE(i.createdat) END) AS completed_count,
+        ? - COUNT(DISTINCT CASE WHEN i.url IS NOT NULL THEN DATE(i.createdat) END) AS not_completed_count
+      FROM marketstructure AS ms
+      LEFT JOIN images AS i 
+      ON LOWER(ms.storeaddress) = LOWER(i.storeaddress)
+      AND DATE(i.createdat) BETWEEN ? AND ?
+      WHERE ms.market = ?
     `;
 
-    // Execute the query with parameters
-    const [results] = await db.promise().query(query, [start, end, market]);
+    // Array to hold query parameters
+    const queryParams = [totalDaysInRange, start, end, market];
 
-    console.log("Query Results:", results); // Debugging: Log the query results
+    // Group by store name
+    query += ` GROUP BY ms.storename ORDER BY ms.storename ASC`;
+
+    // console.log("Executing Query:", query); // Debugging: Log the query
+    // console.log("Query Parameters:", queryParams); // Debugging: Log the query parameters
+
+    // Execute the query with parameters
+    const [results] = await db.promise().query(query, queryParams);
+
+    // console.log("Query Results:", results); // Debugging: Log the query results
 
     // Handle empty results
     if (results.length === 0) {
@@ -60,6 +61,7 @@ const getMarketWiseStoreStatus = async (req, res) => {
 
     // Send the response with query results
     return res.status(200).json({ success: true, data: results });
+
   } catch (err) {
     // Log the error and send an error response
     console.error("Error fetching market-wise store status:", err.message);

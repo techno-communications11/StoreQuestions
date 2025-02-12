@@ -41,7 +41,7 @@ const Navbar = ({ onLogout }) => {
                 ? "/dmdashboard"
                 : role === "market_manager"
                 ? "/marketdashboard"
-                : "/userhome"
+                : null
             }
             onClick={closeNavbar} // Close navbar when logo is clicked
           >
@@ -65,7 +65,7 @@ const Navbar = ({ onLogout }) => {
           id="navbarNav"
         >
           <ul className="navbar-nav ms-auto">
-            {role === "user" && (
+            {/* {role === "user" && (
               <li className="nav-item">
                 <Link
                   className="nav-link fw-medium"
@@ -75,7 +75,7 @@ const Navbar = ({ onLogout }) => {
                   Uploaded Data
                 </Link>
               </li>
-            )}
+            )} */}
 
             {role === "admin" && (
               <>

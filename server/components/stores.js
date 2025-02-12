@@ -1,7 +1,7 @@
 import db from '../dbConnection/db.js';  // Import the connection pool
 
 const stores = (req, res) => {
-    const query = 'SELECT storename FROM marketstructure';
+    const query = 'SELECT storename,storeaddress FROM marketstructure';
 
     // Execute the query using the connection pool
     db.query(query, (err, rows) => {

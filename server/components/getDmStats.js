@@ -1,16 +1,16 @@
 import db from "../dbConnection/db.js";
 
 const getDmStats = async (req, res) => {
-    const { dmname, startDate, endDate } = req.query; //getting start and end date and dm name from client
+    const { dmname, startDate, endDate } = req.query; // Getting start and end date and DM name from client
 
-    if (!dmname || typeof dmname !== "string") { //check it or verify
+    if (!dmname || typeof dmname !== "string") { // Check it or verify
         return res.status(400).json({ success: false, message: "Invalid dmname provided" });
     }
 
     try {
-        // Step 1: Get storename and storeemail from marketStructure
+        // Step 1: Get all stores for the given DM name
         const [marketData] = await db.promise().query(
-            `SELECT storename, storeemail FROM marketStructure WHERE dmname = ?`,
+            `SELECT storename, storeaddress FROM marketStructure WHERE dmname = ?`,
             [dmname]
         );
 
@@ -18,17 +18,16 @@ const getDmStats = async (req, res) => {
             return res.json({ success: true, data: [] });
         }
 
-        // Step 2: Get user IDs from users table using storeemails
-        const storeEmails = marketData.map(store => store.storeemail);
-        const [usersData] = await db.promise().query(
-            `SELECT id, email FROM users WHERE email IN (?)`,
-            [storeEmails]
-        );
+        // Extract storeaddresses for querying the images table
+        const storeAddresses = marketData.map(store => store.storeaddress);
 
-        // Step 3: Get image data using user IDs
-        const userIds = usersData.map(user => user.id);
-        let imageQuery = `SELECT userId, url, createdAt FROM images WHERE userId IN (?)`;
-        const queryParams = [userIds];
+        // Step 2: Query unique days with uploads for each store
+        let imageQuery = `
+            SELECT storeaddress, DATE(createdAt) AS upload_date
+            FROM images
+            WHERE storeaddress IN (?)
+        `;
+        const queryParams = [storeAddresses];
 
         // Date filtering
         if (startDate && endDate) {
@@ -40,47 +39,50 @@ const getDmStats = async (req, res) => {
             queryParams.push(today);
         }
 
+        // Group by storeaddress and upload_date to ensure one count per day
+        imageQuery += ` GROUP BY storeaddress, DATE(createdAt)`;
+
         const [imageData] = await db.promise().query(imageQuery, queryParams);
 
-        // Step 4: Prepare final result
-        const result = marketData.map((store) => {
-            // Find the user associated with the store's email
-            const user = usersData.find(u => u.email === store.storeemail);
+        // Step 3: Prepare store-wise results
+        const result = marketData.map(store => {
+            // Find all unique days the store has uploaded images
+            const storeUploads = imageData.filter(img => img.storeaddress === store.storeaddress);
 
-            // If no user is found, mark as "Not Completed" and createdAt as null
-            if (!user) {
-                return {
-                    storename: store.storename,
-                    completed: "Not Completed",
-                    createdAt: null
-                };
-            }
+            // Count the number of unique days with uploads ("completed")
+            const completed = storeUploads.length;
 
-            // Find the image data for the current user
-            const image = imageData.find(img => img.userId === user.id);
+            // Calculate the total number of days in the range
+            const totalDaysInRange = calculateTotalDays(startDate, endDate);
 
-            // If no image is found, mark as "Not Completed" and createdAt as null
-            if (!image) {
-                return {
-                    storename: store.storename,
-                    completed: "Not Completed",
-                    createdAt: null
-                };
-            }
+            // "Not completed" is the difference between total days and completed days
+            const notCompleted = totalDaysInRange - completed;
 
-            // If image exists, mark as "Completed" and include createdAt
             return {
                 storename: store.storename,
-                completed: "Completed",
-                createdAt: image.createdAt
+                completed: completed,
+                not_completed: notCompleted
             };
         });
-
+ console.log(result)
+        // Send the response
         res.json({ success: true, data: result });
     } catch (err) {
         console.error('Error fetching DM stats:', err);
         res.status(500).json({ success: false, message: 'Error fetching DM stats' });
     }
 };
+
+// Helper function to calculate total days in the range
+function calculateTotalDays(startDate, endDate) {
+    if (!startDate || !endDate) {
+        return 1; // Default to 1 day if no range is provided
+    }
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Add 1 to include both start and end dates
+    return diffDays;
+}
 
 export default getDmStats;

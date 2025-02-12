@@ -138,7 +138,8 @@ const MarketDashboard = ({ setStorename }) => {
                                     <tr className='text-center'>
                                         <th style={{backgroundColor:'#E10174',color:'white'}}>SINO</th>
                                         <th style={{backgroundColor:'#E10174',color:'white'}}>Store Name</th>
-                                        <th style={{backgroundColor:'#E10174',color:'white'}}>Status</th>
+                                        <th style={{backgroundColor:'#E10174',color:'white'}}>Completed</th>
+                                        <th style={{backgroundColor:'#E10174',color:'white'}}>NOT Completed</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -151,15 +152,12 @@ const MarketDashboard = ({ setStorename }) => {
                                             <td >{index + 1}</td>
                                             <td>{store.storename}</td>
                                             <td>
-                                                {store.status==='Completed' ? (
-                                                    <span className="badge bg-success">
-                                                        <FaCheck className="me-1" /> Completed
-                                                    </span>
-                                                ) : (
-                                                    <span className="badge bg-warning">
-                                                        <FaTimes className="me-1" /> Not Completed
-                                                    </span>
-                                                )}
+                                                {store.completed_count}
+                                                    
+                                            </td>
+                                            <td>
+                                                {store.not_completed_count}
+                                                    
                                             </td>
                                         </tr>
                                     ))}

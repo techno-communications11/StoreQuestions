@@ -31,9 +31,9 @@ const imageverify = async (req, res) => {
 
     // Query to get the email associated with the image ID
     const emailQuery = `
-      SELECT u.email, i.createdat, i.question_id
-      FROM users u
-      JOIN images i ON u.id = i.userid
+      SELECT ms.storeemail, i.createdat, i.question_id
+      FROM marketstructure ms
+      JOIN images i ON ms.storeaddress = i.storeaddress
       WHERE i.id = ?;
     `;
     const [userResult] = await db.promise().query(emailQuery, [id]);
@@ -43,7 +43,7 @@ const imageverify = async (req, res) => {
     }
 
     // Get the user's email, creation date of the image, and question_id
-    const userEmail = userResult[0].email;
+    const userEmail = userResult[0].storeemail;
     const createdAt = userResult[0].createdat;
     const questionId = userResult[0].question_id;
 

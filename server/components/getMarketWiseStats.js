@@ -4,49 +4,38 @@ const getMarketStoreCounts = async (req, res) => {
   try {
     // Extract query parameters (optional startDate and endDate)
     const { startDate, endDate } = req.query;
+     console.log(req.query)
 
-    // Default to today's date if no date range is provided
-    const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-    const start = startDate || today;
-    const end = endDate || today;
-
-    console.log("Date Range:", { start, end }); // Debugging: Log the date range
-
-    // Define the SQL query
-    const query = `
-      SELECT 
-        m.market,
-        COUNT(DISTINCT CASE WHEN i.userid IS NOT NULL THEN m.storename END) AS completed_stores_count,
-        COUNT(DISTINCT CASE WHEN i.userid IS NULL THEN m.storename END) AS not_completed_stores_count
-      FROM 
-        marketstructure m
-      LEFT JOIN 
-        users u ON m.storeemail = u.email AND u.email IS NOT NULL
-      LEFT JOIN 
-        images i ON u.id = i.userid AND i.userid IS NOT NULL
-        AND DATE(i.createdat) BETWEEN ? AND ?
-      GROUP BY 
-        m.market;
+    // Base SQL query
+    let query = `
+      SELECT COUNT(*) AS count, ms.market 
+      FROM images AS i 
+      LEFT JOIN marketstructure AS ms 
+      ON LOWER(ms.storeaddress) = LOWER(i.storeaddress)
     `;
 
-    console.log("Executing Query:", query, [start, end]); // Debugging: Log the query
+    // Array to hold query parameters
+    const queryParams = [];
 
-    // Execute the query with parameters
-    const [results] = await db.promise().query(query, [start, end]);
+    // Add date range filtering ONLY if startDate and endDate are provided
+    if (startDate && endDate) {
+      query += ` WHERE DATE(i.createdat) BETWEEN ? AND ? `;
+      queryParams.push(startDate, endDate);
+    }
+
+    // Group by market
+    query += ` GROUP BY ms.market`;
+
+    console.log("Executing Query:", query); // Debugging: Log the query
+
+    // Execute the query with or without date range parameters
+    const [results] = await db.promise().query(query, queryParams);
 
     console.log("Query Results:", results); // Debugging: Log the query results
 
-    // Handle empty results
-    if (results.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No data found for the specified date range.",
-        data: []
-      });
-    }
-
-    // Send the response
+    // Send the response (even if results are empty)
     return res.status(200).json({ success: true, data: results });
+
   } catch (err) {
     // Log the error and send an error response
     console.error("Error fetching market store counts:", err.message);

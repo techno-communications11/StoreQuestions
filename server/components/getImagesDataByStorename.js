@@ -22,11 +22,17 @@ const getImagesDataByStoreName = async (req, res) => {
     try {
         // Query to get all images data for a store and join with the questions table based on question_id
         const [rows] = await db.promise().query(
-            `SELECT i.*, m.storename, q.Question,q.type,q.checklistType
+            `SELECT 
+                i.*, 
+                m.storename, 
+                q.Question,
+                q.type,
+                q.checklistType
              FROM images i
-             JOIN users u ON i.userid = u.id
-             JOIN marketStructure m ON u.email = m.storeemail
-             JOIN questions q ON q.id = i.question_id  -- Assuming images table has question_id
+             INNER JOIN marketStructure m 
+                ON i.storeaddress = m.storeaddress
+             INNER JOIN questions q 
+                ON i.question_id = q.id
              WHERE m.storename = ?`,
             [storename]
         );

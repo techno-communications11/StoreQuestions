@@ -4,7 +4,7 @@ const getMarketStoreCounts = async (req, res) => {
   try {
     // Extract query parameters (optional startDate and endDate)
     const { startDate, endDate } = req.query;
-     console.log(req.query)
+     console.log(req.query,'jjjjjjjjjjjjjjjj')
 
     // Base SQL query
     let query = `
@@ -31,7 +31,7 @@ const getMarketStoreCounts = async (req, res) => {
     // Execute the query with or without date range parameters
     const [results] = await db.promise().query(query, queryParams);
 
-    console.log("Query Results:", results); // Debugging: Log the query results
+    console.log("Query Results:", results,"'jjjjjjjjjjjjjjjj'"); // Debugging: Log the query results
 
     // Send the response (even if results are empty)
     return res.status(200).json({ success: true, data: results });

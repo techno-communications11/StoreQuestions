@@ -87,7 +87,7 @@ const Register = () => {
       </div>
 
       <div className="container-fluid d-flex gap-5 justify-content-around align-items-center">
-        <div className="row w-100 justify-content-center p-5"
+        <div className="row w-100 justify-content-center p-0 p-md-5 p-lg-5"
           style={{
             background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
           }}
@@ -102,7 +102,7 @@ const Register = () => {
               style={{ height: "100%", width: "100%" }}
             />
           </div>
-          <Col className='col-md-5'>
+          <Col className='col-md-5 col-sm-12 col-lg-5'>
             <div className="card shadow-lg border-0 rounded-lg"    xs={12} // Full width on extra small screens
             md={8}// 1/3 width on medium screens
             lg={8}//1/3 width on large screens

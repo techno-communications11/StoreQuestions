@@ -36,7 +36,7 @@ const Navbar = ({ onLogout }) => {
             className="navbar-brand fw-bold fs-6"
             to={
               role === "admin"
-                ? "/admindashboard"
+                ? "/storedashboard"
                 : role === "district_manager"
                 ? "/dmdashboard"
                 : role === "market_manager"
@@ -127,7 +127,7 @@ const Navbar = ({ onLogout }) => {
               </>
             )}
 
-            <li className="nav-item">
+            <li className="nav-item mt-2 mt-lg-0 mt-md-0">
               <button
                 className="btn btn-danger btn-small w-100"
                 onClick={handleLogout} // Logout and close navbar

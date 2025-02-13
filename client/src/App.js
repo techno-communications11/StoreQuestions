@@ -28,6 +28,8 @@ function App() {
   const [role, setRole] = useState(null);
   const [marketname, setMarketname] = useState('');
   const [storename, setStorename] = useState('');
+ 
+ 
 
  
 
@@ -71,8 +73,8 @@ function App() {
     if (isAuthenticated && role) {
       switch (role) {
         case 'admin':
-          if (window.location.pathname !== '/admindashboard') {
-            <Navigate to="/admindashboard" replace />;
+          if (window.location.pathname !== '/storedashboard') {
+            <Navigate to="/storedashboard" replace />;
           }
           break;
         case 'district_manager':
@@ -142,7 +144,7 @@ function App() {
           element={
             isAuthenticated ? (
               role === 'admin' ? (
-                <Navigate to="/admindashboard" replace />
+                <Navigate to="/storedashboard" replace />
               ) : role === 'district_manager' ? (
                 <Navigate to="/dmdashboard" replace />
               ) : role === 'market_manager' ? (
@@ -170,16 +172,16 @@ function App() {
           element={
             isAuthenticated ? (
               role === 'admin' ? (
-                <Navigate to="/admindashboard" replace />
+                <Navigate to="/storedashboard" replace />
               ) : role === 'district_manager' ? (
                 <Navigate to="/dmdashboard" replace />
               ) : role === 'market_manager' ? (
                 <Navigate to="/marketdashboard" replace />
               ) : (
-                <UserHome onVerify={handleVerify} />
+                <UserHome onverify={handleVerify} />
               )
             ) : (
-              <UserHome onVerify={handleVerify} />
+              <UserHome onverify={handleVerify} />
             )
           }
         />
@@ -209,7 +211,7 @@ function App() {
         />
         <Route
           path="/mngevg"
-          element={<MngEvg onVerify={handleVerify} />}
+          element={<MngEvg onverify={handleVerify} />}
         />
         <Route
           path="/morning"

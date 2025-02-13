@@ -52,7 +52,7 @@ const Login = ({ onLogin }) => {
         }
 
         if (role === "admin") {
-          navigate("/admindashboard");
+          navigate("/storedashboard");
         } else if (role === 'market_manager') {
           navigate('/marketdashboard')
 
@@ -109,7 +109,7 @@ const Login = ({ onLogin }) => {
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="text-center mb-5"
+        className="text-center me-2 mb-5"
         style={{
           color: "#E10174",
           fontWeight: "bold",

@@ -56,7 +56,7 @@ const MngEvg = ({ onverify }) => {
             setUsername(name.name); // Show name
             // Debugging log for onverify
             if (typeof onverify === 'function') {
-                console.log("Calling onverify function...");
+                // console.log("Calling onverify function...");
                 onverify(); // Trigger verification callback
             } else {
                 console.error("onverify is not a function or is undefined");
@@ -105,13 +105,13 @@ const MngEvg = ({ onverify }) => {
     
 
     return (
-        <div className="min-vh-100"  style={{
+        <div className="min-vh-100 "  style={{
             background: "linear-gradient(135deg,rgb(239, 248, 229) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
           }}>
-            <Container fluid className=" d-flex flex-column  p-4">
+            <Container fluid className=" d-flex flex-column  p-0 p-md-4 p-lg-4">
                 {/* Header Section */}
-                <div className="header-section text-center">
-                    <h2 className="company-title display-3 fw-bold text-gradient mb-0">
+                <div className="header-section text-center mt-0 mt-md-4 mt-lg-4">
+                <h2 className="company-title fw-bold text-gradient mb-0 fs-1 fs-md-1 fs-lg-1 mt-4 mt-md-0 mt-lg-0">
                         Techno Communications LLC
                     </h2>
                     <div className="header-divider"></div>
@@ -121,15 +121,15 @@ const MngEvg = ({ onverify }) => {
                 </div>
 
                 {/* Cards Section */}
-                <Row className="justify-content-center align-items-stretch g-4 main-content">
+                <Row className="justify-content-center align-items-stretch  g-2 g-md-4 g-lg-4 main-content">
                     {/* Daily Checklist Card */}
                     <Col md={6} lg={5}>
-                        <Card className="feature-card  text-center border-0 mt-4">
-                            <Card.Body className="d-flex flex-column align-items-center p-5">
+                        <Card className="feature-card  text-center border-0 mt-0 mt-md-4 mt-lg-4">
+                            <Card.Body className="d-flex flex-column align-items-center p-0 p-md-4 p-lg-4">
                                 <div className="icon-wrapper">
                                     <FaClipboardList className="feature-icon" />
                                 </div>
-                                <Card.Title className="fw-bold text-uppercase mt-3">
+                                <Card.Title className="fw-bold text-uppercase mt-0 mt-lg-3 mt-md-3">
                                     Morning Check List
                                 </Card.Title>
                                 <Card.Text className="text-muted mb-4">
@@ -145,12 +145,12 @@ const MngEvg = ({ onverify }) => {
 
                     {/* Compliance Checklist Card */}
                     <Col md={6} lg={5}>
-                        <Card className="feature-card  text-center border-0 mt-4">
-                            <Card.Body className="d-flex flex-column align-items-center p-5">
+                        <Card className="feature-card  text-center border-0 mt-md-4 mt-lg-4">
+                            <Card.Body className="d-flex flex-column align-items-center p-0 p-md-4 p-lg-4">
                                 <div className="icon-wrapper">
                                     <FaCheckCircle className="feature-icon" />
                                 </div>
-                                <Card.Title className="fw-bold text-uppercase mt-3">
+                                <Card.Title className="fw-bold text-uppercase mt-0 mt-lg-3 mt-md-3">
                                     Evening Check List
                                 </Card.Title>
                                 <Card.Text className="text-muted mb-4">
@@ -180,7 +180,7 @@ const MngEvg = ({ onverify }) => {
                     </div>
                     :
                     <Modal.Body className="text-center p-5">
-                        <Modal.Title className="w-100 text-center mb-4 fw-bolder">
+                        <Modal.Title className="w-100 text-center mb-4 fw-bolder text-gradient">
                             {modalContent}
                         </Modal.Title>
                         <input

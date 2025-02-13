@@ -1,217 +1,390 @@
-import { useEffect, useState } from 'react';
-import { Table, Spinner, Alert, Form, Button, Container, Card, Row, Col } from 'react-bootstrap';
+import { useEffect, useState, useMemo } from 'react';
+import {
+  Table,
+  Spinner,
+  Alert,
+  Form,
+  Button,
+  Container,
+  Card,
+  Dropdown,
+  Row,
+  Col
+} from 'react-bootstrap';
+import {
+  BsCalendarDate,
+  BsShop,
+  BsCheckCircleFill,
+  BsXCircleFill,
+  BsArrowRightCircle,
+  BsFilterCircle,
+} from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
-import { BsCalendarDate, BsShop, BsCheckCircleFill, BsXCircleFill, 
-         BsArrowRightCircle, BsFilterCircle } from 'react-icons/bs';
-import { motion } from 'framer-motion';
 
-const StoreDashboard = ({ marketname, setStorename }) => {
+const StoreDashboard = ({ marketName, setStorename }) => {
   const [marketData, setMarketData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [dateRange, setDateRange] = useState({
+    start: '',
+    end: new Date().toISOString().split('T')[0] // Default to today
+  });
+  const [selectedFilters, setSelectedFilters] = useState({
+    markets: [],
+    stores: []
+  });
   const navigate = useNavigate();
 
-  const fetchMarketData = async (startDate = '', endDate = '') => {
+  // Memoized unique values for filters
+  const uniqueMarkets = useMemo(() => 
+    [...new Set(marketData.map(store => store.market))],
+    [marketData]
+  );
+
+  const uniqueStores = useMemo(() => {
+    // If no markets are selected, show all stores
+    if (selectedFilters.markets.length === 0) {
+      return [...new Set(marketData.map((store) => store.storename))];
+    }
+  
+    // Otherwise, filter stores by selected markets
+    return [
+      ...new Set(
+        marketData
+          .filter((store) => selectedFilters.markets.includes(store.market)) // Filter by selected markets
+          .map((store) => store.storename) // Extract store names
+      ),
+    ];
+  }, [marketData, selectedFilters.markets]); // Add `selectedFilters.markets` as a dependency
+
+  // Fetch market data with all active filters
+  const fetchMarketData = async () => {
     setLoading(true);
-    marketname = marketname || localStorage.getItem('marketname');
+    setError(null);
+    
     try {
-      const url = `${process.env.REACT_APP_BASE_URL}/getstorewiseuploadcount?market=${marketname}&startDate=${startDate}&endDate=${endDate}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const currentMarket = marketName || localStorage.getItem('marketName');
+      const url = new URL(`${process.env.REACT_APP_BASE_URL}/getstorewiseuploadcount`);
+      
+      // Add all query parameters
+      const params = new URLSearchParams({
+        market: currentMarket,
+        startDate: dateRange.start,
+        endDate: dateRange.end,
+        ...(selectedFilters.markets.length && { markets: selectedFilters.markets.join(',') }),
+        ...(selectedFilters.stores.length && { stores: selectedFilters.stores.join(',') })
       });
-
+      
+      url.search = params.toString();
+      
+      const response = await fetch(url, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
       const data = await response.json();
-
+      
       if (data.success) {
         setMarketData(data.data);
       } else {
-        setError('No data found for this market');
+        setError(data.message || 'No data found for this market.');
       }
     } catch (err) {
-      setError('Error fetching data');
+      setError('Error fetching data: ' + err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch data on initial load and when filters change
   useEffect(() => {
     fetchMarketData();
-  }, [marketname]);
+  }, [marketName, dateRange, selectedFilters]);
 
-  const handleStore = (storename) => {
-    localStorage.setItem('storename', storename);
-    setStorename(storename);
+  // Filter handlers
+  const handleFilterChange = (filterType, value) => {
+    setSelectedFilters(prev => {
+      const isSelected = prev[filterType].includes(value);
+      return {
+        ...prev,
+        [filterType]: isSelected
+          ? prev[filterType].filter(item => item !== value)
+          : [...prev[filterType], value]
+      };
+    });
+  };
+
+  const clearFilters = (filterType) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: []
+    }));
+  };
+
+  // Navigate to detailed view
+  const handleStoreSelection = (storeName) => {
+    localStorage.setItem('storeName', storeName);
+    setStorename(storeName);
     navigate('/detaileddata');
   };
 
-  const handleDateFilter = (e) => {
-    e.preventDefault();
-    fetchMarketData(startDate, endDate);
-  };
+  // Filter dropdown component
+  const FilterDropdown = ({ title, items, filterType, selectedItems }) => (
+    <Dropdown>
+      <Dropdown.Toggle variant="outline-primary" className="w-100">
+        {title} ({selectedItems.length} selected)
+      </Dropdown.Toggle>
+      <Dropdown.Menu style={{ maxHeight: '20rem', overflowY: 'auto', width: '100%' }}>
+        <Dropdown.Item onClick={() => clearFilters(filterType)}>
+          Clear All
+        </Dropdown.Item>
+        <Dropdown.Divider />
+        {items.map(item => (
+          <Dropdown.Item 
+            key={item} 
+            onClick={(e) => {
+              e.stopPropagation();
+              handleFilterChange(filterType, item);
+            }}
+          >
+            <Form.Check
+              type="checkbox"
+              label={item}
+              checked={selectedItems.includes(item)}
+              onChange={() => {}}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </Dropdown.Item>
+        ))}
+      </Dropdown.Menu>
+    </Dropdown>
+  );
+
+  // Filtered data based on selected filters
+  const filteredData = useMemo(() => {
+    return marketData.filter(store => {
+      const marketMatch = selectedFilters.markets.length === 0 || 
+                         selectedFilters.markets.includes(store.market);
+      const storeMatch = selectedFilters.stores.length === 0 || 
+                        selectedFilters.stores.includes(store.storename);
+      return marketMatch && storeMatch;
+    });
+  }, [marketData, selectedFilters]);
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-50 py-5">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    );
+  }
 
   return (
     <Container fluid className="py-4 bg-light">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Row className="mb-4">
-          <Col>
-            <h1 className="text-center fw-bold text-capitalize" style={{ color: '#FF69B4' }}>
-              <BsShop className="me-2" />
-              {marketname?.toLowerCase() || localStorage.getItem('marketname')?.toLowerCase()} Dashboard
-            </h1>
-          </Col>
-        </Row>
-
-        <Card className="shadow-sm mb-4">
-          <Card.Body>
-            <Form onSubmit={handleDateFilter} className="d-flex flex-wrap gap-3 align-items-end">
+      {/* Date Filter Section */}
+      <Card className="shadow-sm mb-2">
+        <Card.Header className="bg-white">
+          <h5 className="mb-0">Date Filter</h5>
+        </Card.Header>
+        <Card.Body>
+          <Form className="row g-3">
+            <Col md={5}>
               <Form.Group>
-                <Form.Label className="text-muted">
+                <Form.Label>
                   <BsCalendarDate className="me-2" />
                   Start Date
                 </Form.Label>
                 <Form.Control
                   type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  value={dateRange.start}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
                   className="border-pink"
                 />
               </Form.Group>
-
+            </Col>
+            <Col md={5}>
               <Form.Group>
-                <Form.Label className="text-muted">
+                <Form.Label>
                   <BsCalendarDate className="me-2" />
                   End Date
                 </Form.Label>
                 <Form.Control
                   type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  value={dateRange.end}
+                  onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
                   className="border-pink"
                 />
               </Form.Group>
-
-              <Button 
-                type="submit" 
-                variant="outline-pink"
-                className="px-4"
-              >
+            </Col>
+            <Col md={2} className="d-flex align-items-end">
+              <Button onClick={fetchMarketData} variant="pink" className="px-4 w-100">
                 <BsFilterCircle className="me-2" />
                 Apply Filter
               </Button>
-            </Form>
-          </Card.Body>
-        </Card>
+            </Col>
+          </Form>
+        </Card.Body>
+      </Card>
 
-        {loading ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="pink" />
-          </div>
-        ) : error ? (
-          <Alert variant="danger" className="text-center">
-            {error}
-          </Alert>
-        ) : marketData.length > 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+      {/* Filters Section */}
+      <Card className="shadow-sm mb-2">
+        <Card.Body>
+          <Row className="g-3">
+            <Col xs={12} md={6}>
+              <FilterDropdown
+                title="Market Filter"
+                items={uniqueMarkets}
+                filterType="markets"
+                selectedItems={selectedFilters.markets}
+              />
+            </Col>
+            <Col xs={12} md={6}>
+              <FilterDropdown
+                title="Store Filter"
+                items={uniqueStores}
+                filterType="stores"
+                selectedItems={selectedFilters.stores}
+              />
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+
+      {/* Error Display */}
+      {error && (
+        <Alert variant="danger" className="mb-4">
+          {error}
+        </Alert>
+      )}
+
+      {/* Data Display */}
+      {filteredData.length > 0 ? (
+        <>
+          {/* Table View for Large Screens */}
+          <div className="d-none d-lg-block">
             <Card className="shadow">
               <Card.Body>
-                <Table hover className="align-middle">
-                  <thead className="bg-light">
+                <Table hover responsive className="align-middle">
+                  <thead>
                     <tr>
-                      <th className="text-white" style={{backgroundColor:'#E10174'}}>SINO</th>
-                      <th className="text-white" style={{backgroundColor:'#E10174'}}>Store Name</th>
-                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Completed Count</th>
-                      <th className="text-white text-center" style={{backgroundColor:'#E10174'}}>Not Completed Count</th>
+                      {['SINO', 'Market', 'Store Name', 'Completed', 'Not Completed'].map((header) => (
+                        <th 
+                          key={header} 
+                          className="text-center"
+                          style={{ backgroundColor: '#E10174', color: 'white' }}
+                        >
+                          {header}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {marketData.map((store, index) => (
-                      <motion.tr
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.1 }}
-                        whileHover={{ scale: 1.01 }}
-                        className="cursor-pointer"
+                    {filteredData.map((store, index) => (
+                      <tr
+                        key={store.storename}
+                        onClick={() => handleStoreSelection(store.storename)}
+                        className="cursor-pointer text-center"
                       >
-                        <td className='text-success'>{index + 1}</td>
-                        <td 
-                          onClick={() => handleStore(store.storename)}
-                          className="fw-bold"
-                          style={{ color: '#FF69B4' }}
-                        >
+                        <td className="fw-bold text-success">{index + 1}</td>
+                        <td className="text-pink fw-bold">
                           <BsArrowRightCircle className="me-2" />
+                          {store.market}
+                        </td>
+                        <td className="text-primary fw-bold">
+                          <BsShop className="me-2" />
                           {store.storename}
                         </td>
                         <td className="text-center text-success">
+                          <BsCheckCircleFill className="me-2" />
                           {store.completed_count}
                         </td>
-                        <td className="text-center text-success">
+                        <td className="text-center text-danger">
+                          <BsXCircleFill className="me-2" />
                           {store.not_completed_count}
                         </td>
-                      </motion.tr>
+                      </tr>
                     ))}
                   </tbody>
                 </Table>
               </Card.Body>
             </Card>
-          </motion.div>
-        ) : (
-          <Alert variant="info" className="text-center">
-            No stores found for this market.
-          </Alert>
-        )}
-      </motion.div>
+          </div>
+
+          {/* Card View for Small Screens */}
+          <div className="d-lg-none">
+            <Row xs={1} md={2} className="g-2">
+              {filteredData.map((store, index) => (
+                <Col key={store.storename}>
+                  <Card
+                    className="h-100 shadow cursor-pointer"
+                    onClick={() => handleStoreSelection(store.storename)}
+                  >
+                    <Card.Header className="bg-white">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <span className="fw-bold text-success">#{index + 1}</span>
+                        <span className="text-pink fw-bold">
+                          <BsArrowRightCircle className="me-2" />
+                          {store.market}
+                        </span>
+                      </div>
+                    </Card.Header>
+                    <Card.Body>
+                      <div className="mb-3">
+                        <h5 className="text-primary mb-0">
+                          <BsShop className="me-2" />
+                          {store.storename}
+                        </h5>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="text-success">
+                          <BsCheckCircleFill className="me-2" />
+                          <span className="fw-bold">{store.completed_count}</span>
+                          <div className="small">Completed</div>
+                        </div>
+                        <div className="text-danger">
+                          <BsXCircleFill className="me-2" />
+                          <span className="fw-bold">{store.not_completed_count}</span>
+                          <div className="small">Not Completed</div>
+                        </div>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          </div>
+        </>
+      ) : (
+        <Alert variant="info" className="text-center">
+          No data available for the selected filters.
+        </Alert>
+      )}
 
       <style jsx>{`
-        .border-pink {
-          border-color: #FF69B4;
-        }
-        .border-pink:focus {
-          border-color: #FF69B4;
-          box-shadow: 0 0 0 0.25rem rgba(255, 105, 180, 0.25);
-        }
-        .btn-outline-pink {
-          color: #FF69B4;
-          border-color: #FF69B4;
-        }
-        .btn-outline-pink:hover {
-          color: white;
-          background-color: #FF69B4;
-        }
         .cursor-pointer {
           cursor: pointer;
         }
-        .spinner-border.text-pink {
-          color: #FF69B4;
+        .min-vh-50 {
+          min-height: 50vh;
         }
-        .badge-custom {
-          padding: 8px 12px;
-          border-radius: 20px;
-          font-weight: 500;
-          display: inline-flex;
-          align-items: center;
-          font-size: 0.9rem;
+        .border-pink {
+          border-color: #E10174;
         }
-        .badge-success {
-          background-color: #d4edda;
-          color: #155724;
+        .border-pink:focus {
+          border-color: #E10174;
+          box-shadow: 0 0 0 0.25rem rgba(225, 1, 116, 0.25);
         }
-        .badge-warning {
-          background-color: #fff3cd;
-          color: #856404;
+        .btn-pink {
+          background-color: #E10174;
+          border-color: #E10174;
+          color: white;
+        }
+        .btn-pink:hover {
+          background-color: #c9016a;
+          border-color: #c9016a;
+          color: white;
+        }
+        .text-pink {
+          color: #E10174;
         }
       `}</style>
     </Container>

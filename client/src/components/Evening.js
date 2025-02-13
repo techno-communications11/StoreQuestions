@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { jwtDecode } from 'jwt-decode';
+import { Camera, Upload, X } from 'lucide-react';
 import {
   FaCheckCircle,
   FaTimesCircle,
@@ -17,7 +17,10 @@ const Evening = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const fileInputRef = useRef(null); // Using useRef for file input
+  const [fileName, setFileName] = useState(''); // State to store the file name
+  const fileInputRef = useRef(null);
+  const [captureMode, setCaptureMode] = useState(null); // 'camera' or 'file'
+  const [uploading, setUploading] = useState(false);
 
   const getStores = async () => {
     try {
@@ -27,7 +30,7 @@ const Evening = () => {
       } else {
         const data = await response.json();
         setStores(data);
-         console.log(data,'dddddd')
+        console.log(data, 'dddddd')
         // Initialize row states
         const initialState = data.reduce((acc, store) => {
           acc[store.question] = { checked: false, file: null };
@@ -58,12 +61,12 @@ const Evening = () => {
       return;
     }
     const ntid = localStorage.getItem('ntid');
-    const storename = localStorage.getItem('storename');
-    if (!ntid ||!storename) {
+    const storename = localStorage.getItem('selectedstore');
+    if (!ntid || !storename) {
       alert('No data found');
       return;
     }
-   // Get the ID from the decoded token
+    // Get the ID from the decoded token
     const formData = new FormData();
     formData.append('file', selectedRowState.file);
     formData.append('question', selectedStore);
@@ -95,6 +98,19 @@ const Evening = () => {
     setOpenModal(false);
     setErrorMessage('');
     setSuccessMessage(''); // Clear success message as well
+    setFileName('')
+    setCaptureMode('')
+    fileInputRef.current=null;
+    
+  };
+ 
+  const handleOpenFileDialog = (mode) => {
+    setCaptureMode(mode);
+    if (mode === "file") {
+      fileInputRef.current?.click();
+    } else if (mode === "camera") {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleCheckboxChange = (storename) => (e) => {
@@ -104,18 +120,49 @@ const Evening = () => {
     }));
   };
 
-  const handleFileChange = (e) => {
-    setRowStates((prevState) => ({
-      ...prevState,
-      [selectedStore]: { ...prevState[selectedStore], file: e.target.files[0] },
-    }));
-  };
 
-  const handleCaptureImage = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setRowStates((prevState) => ({
+        ...prevState,
+        [selectedStore]: { ...prevState[selectedStore], file },
+      }));
+      setFileName(file.name); // Set file name
     }
   };
+
+  const renderCard = (store, index) => (
+    <div className="col-12 mb-3" key={index}>
+      <div className="card h-100 shadow-sm">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h6 className="card-title mb-0 text-gradient fw-bolder">Question {index + 1}</h6>
+            <div className="form-check">
+              <lable className="fw-bolder text-success">check</lable>
+              <input
+                className="form-check-input border-primary fw-bolder"
+                type="checkbox"
+                checked={rowStates[store.question]?.checked || false}
+                onChange={handleCheckboxChange(store.question)}
+              />
+            </div>
+          </div>
+
+          <p className="card-text mb-3 "><span className='text-gradient fw-bolder'>Q: </span>{store.question?.toLowerCase()}</p>
+
+          <button
+            className="btn btn-primary w-100"
+            onClick={() => handleLogin(store.question)}
+            disabled={!rowStates[store.question]?.checked}
+          >
+            <FaUpload className="me-2" /> Upload
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="container-fluid mt-5">
@@ -153,103 +200,139 @@ const Evening = () => {
         </div>
       ) : (
         <>
-          <h1 className="text-center fw-bolder mb-4" style={{color:'#E10174'}}>Evening Check List</h1>
+          <h1 className="text-center fw-bolder mb-4" style={{ color: '#E10174' }}>Evening Check List</h1>
 
           {/* Table */}
-          <table className="table table-striped table-hover">
-            <thead className="table-light">
-              <tr >
-              <th  className='text-white' style={{backgroundColor:'#E10174'}}>SINO</th>
-                <th  className='text-white' style={{backgroundColor:'#E10174'}}>Question</th>
-                <th className='text-white' style={{backgroundColor:'#E10174'}}>Check</th>
-                <th  className='text-white' style={{backgroundColor:'#E10174'}}>Validate</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stores.length > 0 ? (
-                stores.filter((store) => store.checklistType=== 'Evening Question').map((store, index) => (
-                  <tr key={index}>
-                    <td>{index+1}</td>
-                    <td>{store.question?.toLowerCase()}</td>
-                    <td>
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={rowStates[store.question]?.checked || false}
-                          onChange={handleCheckboxChange(store.question)}
-                        />
-                      </div>
-                    </td>
-                    <td>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => handleLogin(store.question)}
-                        disabled={!rowStates[store.question]?.checked}
-                      >
-                        <FaUpload className="me-2" /> Upload
-                      </button>
+          <div className="d-none d-md-block">
+            <table className="table table-striped table-hover">
+              <thead className="table-light">
+                <tr>
+                  <th className='text-white' style={{ backgroundColor: '#E10174' }}>SINO</th>
+                  <th className='text-white' style={{ backgroundColor: '#E10174' }}>Question</th>
+                  <th className='text-white' style={{ backgroundColor: '#E10174' }}>Check</th>
+                  <th className='text-white' style={{ backgroundColor: '#E10174' }}>Validate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stores.length > 0 ? (
+                  stores.filter((store) => store.checklistType === 'Evening Question').map((store, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{store.question?.toLowerCase()}</td>
+                      <td>
+                        <div className="form-check">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={rowStates[store.question]?.checked || false}
+                            onChange={handleCheckboxChange(store.question)}
+                          />
+                        </div>
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-primary"
+                          onClick={() => handleLogin(store.question)}
+                          disabled={!rowStates[store.question]?.checked}
+                        >
+                          <FaUpload className="me-2" /> Upload
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="text-center">
+                      No stores found
                     </td>
                   </tr>
-                ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="d-md-none">
+            <div className="row">
+              {stores.length > 0 ? (
+                stores
+                  .filter((store) => store.checklistType === 'Evening Question')
+                  .map((store, index) => renderCard(store, index))
               ) : (
-                <tr>
-                  <td colSpan="3" className="text-center">
+                <div className="col-12">
+                  <div className="alert alert-info text-center">
                     No stores found
-                  </td>
-                </tr>
+                  </div>
+                </div>
               )}
-            </tbody>
-          </table>
+            </div>
+          </div>
 
           {/* Modal */}
           {openModal && (
-            <div className="modal  show d-block" tabIndex="-1" role="dialog">
-              <div className="modal-dialog  modal-dialog-centered" role="document">
-                <div className="modal-content shadow-lg">
-                  <div className="modal-header bg-primary text-white">
-                    <h5 className="modal-title">{selectedStore}</h5>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      onClick={handleCloseModal}
-                    ></button>
-                  </div>
-                  <div className="modal-body">
-                    <p>Select a file to upload:</p>
-                    <input
-                      type="file"
-                      className="form-control mb-3"
-                      onChange={handleFileChange}
-                      ref={fileInputRef}
-                    />
-                    <p className="text-center">Or</p>
-                    <button
-                      className="btn btn-secondary w-100"
-                      onClick={handleCaptureImage}
-                    >
-                      <FaCamera className="me-2" /> Capture Image with Camera
-                    </button>
-                  </div>
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={handleCloseModal}
-                    >
-                      Close
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={handleValidate}
-                    >
-                      <FaCheckCircle className="me-2" /> Upload
-                    </button>
+            <>
+              <div className="modal-backdrop show"></div>
+              <div className="modal show d-block" tabIndex="-1" role="dialog">
+                <div className="modal-dialog modal-dialog-centered" role="document">
+                  <div className="modal-content border-0 shadow-lg">
+                    <div className="modal-header text-gradient text-white border-0 mt-2">
+                      <h5 className="modal-title fw-bold">{selectedStore}</h5>
+                      <button
+                        type="button"
+                        className="btn-close btn-close-dark mb-5"
+                        onClick={handleCloseModal}
+                        aria-label="Close"
+                      />
+                    </div>
+                    <div className="modal-body p-2">
+                      <div className="d-grid gap-3">
+                        {/* Hidden File Input */}
+                        <input
+                          type="file"
+                          className="d-none"
+                          ref={fileInputRef}
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleFileChange}
+                        />
+
+                        {/* File Upload UI */}
+                        <div className="upload-area p-2 border-2 rounded-3 text-center">
+                          <Upload className="mb-2" size={82} />
+                          {fileName && (
+                            <div className="mt-2">
+                              <span className="text-muted">Selected File: {fileName}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Choose File or Use Camera */}
+                        <div className="d-flex flex-column gap-2">
+                          <button
+                            className="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2"
+                            onClick={() => handleOpenFileDialog("file")}
+                          >
+                            <Upload size={20} />
+                            Choose File
+                          </button>
+
+                        </div>
+                      </div>
+                    </div>
+                    <div className="modal-footer border-top">
+                      <button
+                        type="button"
+                        className="btn btn-primary d-flex align-items-center gap-2"
+                        onClick={handleValidate}
+                        disabled={uploading || !fileName}
+                      >
+                        {uploading ? <FaSpinner className="spinner-border spinner-border-sm" /> : <Upload size={20} />}
+                        Upload
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </>
       )}

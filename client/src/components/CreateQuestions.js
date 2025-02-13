@@ -138,9 +138,10 @@ const CreateQuestions = () => {
             opacity: "0.8",
           }}
         >
-          <h1 className="fw-bolder" style={{ fontSize: "100px" }}>
-            Create Questions
-          </h1>
+          <h1 className="fw-bolder display-1 display-md-3 display-sm-5">
+  Create Questions
+</h1>
+
         </div>
       </motion.div>
 
@@ -200,6 +201,7 @@ const CreateQuestions = () => {
             <Button
               onClick={handleCreateQuestion}
               disabled={loading}
+              className="w-100"
               style={{ backgroundColor: "#FF69B4", borderColor: "#FF69B4" }}
             >
               <FaPlusCircle className="me-2" />
@@ -242,6 +244,7 @@ const CreateQuestions = () => {
                 <Col md={2} className="text-md-end">
                   <Button
                     variant="danger"
+                     className="w-100 w-md-0 w-lg-0"
                     onClick={() => handleDeleteQuestion(question.id)}
                     aria-label={`Delete question: ${question.Question}`}
                   >

@@ -73,15 +73,15 @@ function Crediantals() {
 
       {/* Main Content Section */}
       <div
-        className=" d-flex flex-column flex-md-row align-items-center justify-content-center p-4 gap-5"
+        className=" d-flex flex-column flex-md-row align-items-center justify-content-center p-4 gap-md-5 gap-lg-5 gap-0"
         style={{
           background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
         }}
       >
         {/* Lottie Animation (Hidden on Small Screens) */}
-        <div className="col-lg-3 col-md-4  d-md-flex justify-content-center align-items-center mb-4 mb-md-0">
+        <div className="col-lg-3 col-md-4  d-md-flex justify-content-center align-items-center mb-md-3 mb-lg-3 mb-0 d-none">
           <Lottie
-            className="mb-3"
+            className="mb-md-3 mb-lg-3 mb-0"
             autoplay
             loop
             animationData={Animation}
@@ -90,7 +90,7 @@ function Crediantals() {
         </div>
 
         {/* Upload Card */}
-        <div className="card shadow-lg border-0 rounded-4" style={{ maxWidth: '500px', width: '100%' }}>
+        <div className="card shadow-lg border-0 rounded-4 p-0" style={{ maxWidth: '500px', width: '100%' }}>
           <div className="card-body p-4">
             <div className="text-center mb-5">
               <div className="display-6 text-primary mb-3">

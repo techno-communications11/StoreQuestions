@@ -9,7 +9,7 @@ dotenv.config();
 
 app.use(express.json());
 const allowOrigin = {
-  origin: 'http://localhost:3000',
+  origin: 'http://192.168.29.137:3000',
   methods: 'PUT, GET, POST' 
 };
 

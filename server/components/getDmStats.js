@@ -1,9 +1,9 @@
 import db from "../dbConnection/db.js";
 
 const getDmStats = async (req, res) => {
-    const { dmname, startDate, endDate } = req.query; // Getting start and end date and DM name from client
+    const { dmname, startDate, endDate } = req.query;
 
-    if (!dmname || typeof dmname !== "string") { // Check it or verify
+    if (!dmname || typeof dmname !== "string") {
         return res.status(400).json({ success: false, message: "Invalid dmname provided" });
     }
 
@@ -18,54 +18,43 @@ const getDmStats = async (req, res) => {
             return res.json({ success: true, data: [] });
         }
 
-        // Extract storeaddresses for querying the images table
         const storeAddresses = marketData.map(store => store.storeaddress);
 
-        // Step 2: Query unique days with uploads for each store
+        // Step 2: Calculate total days in the range
+        const today = new Date().toISOString().split('T')[0];
+        const start = startDate || today; // Default to January 1, 2025, if no startDate is provided
+        const totalDaysInRange = calculateTotalDays(start, endDate || today);
+
+        // Step 3: Fetch unique days with uploads
         let imageQuery = `
             SELECT storeaddress, DATE(createdAt) AS upload_date
             FROM images
-            WHERE storeaddress IN (?)
+            WHERE storeaddress IN (?) AND DATE(createdAt) BETWEEN ? AND ?
+            GROUP BY storeaddress, DATE(createdAt)
+            ORDER BY createdAt ASC
         `;
-        const queryParams = [storeAddresses];
 
-        // Date filtering
-        if (startDate && endDate) {
-            imageQuery += ` AND DATE(createdAt) BETWEEN ? AND ?`;
-            queryParams.push(startDate, endDate);
-        } else {
-            const today = new Date().toISOString().split('T')[0];
-            imageQuery += ` AND DATE(createdAt) = ?`;
-            queryParams.push(today);
-        }
+        const [imageData] = await db.promise().query(imageQuery, [storeAddresses, start, endDate || today]);
 
-        // Group by storeaddress and upload_date to ensure one count per day
-        imageQuery += ` GROUP BY storeaddress, DATE(createdAt)`;
-
-        const [imageData] = await db.promise().query(imageQuery, queryParams);
-
-        // Step 3: Prepare store-wise results
+        // Step 4: Prepare store-wise results
         const result = marketData.map(store => {
-            // Find all unique days the store has uploaded images
-            const storeUploads = imageData.filter(img => img.storeaddress === store.storeaddress);
+            // Get the list of unique upload dates for this store
+            const storeUploads = imageData
+                .filter(img => img.storeaddress === store.storeaddress)
+                .map(img => img.upload_date);
 
-            // Count the number of unique days with uploads ("completed")
-            const completed = storeUploads.length;
-
-            // Calculate the total number of days in the range
-            const totalDaysInRange = calculateTotalDays(startDate, endDate);
-
-            // "Not completed" is the difference between total days and completed days
+            // Count the number of unique completed days
+            const completed = new Set(storeUploads).size;
             const notCompleted = totalDaysInRange - completed;
 
             return {
                 storename: store.storename,
                 completed: completed,
-                not_completed: notCompleted
+                not_completed: Math.max(notCompleted, 0) // Ensure no negative values
             };
         });
- console.log(result)
-        // Send the response
+
+        console.log(result);
         res.json({ success: true, data: result });
     } catch (err) {
         console.error('Error fetching DM stats:', err);
@@ -75,13 +64,10 @@ const getDmStats = async (req, res) => {
 
 // Helper function to calculate total days in the range
 function calculateTotalDays(startDate, endDate) {
-    if (!startDate || !endDate) {
-        return 1; // Default to 1 day if no range is provided
-    }
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Add 1 to include both start and end dates
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     return diffDays;
 }
 

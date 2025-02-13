@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
 import { useEffect, useState } from 'react';
-import { Table, Spinner, Alert, Form, Button, Container, Row, Col } from 'react-bootstrap';
+import { Table, Spinner, Alert, Form, Button, Container, Row, Col, Card } from 'react-bootstrap';
 import { FaFilter, FaSyncAlt, FaStore } from 'react-icons/fa'; // Importing React Icons
 import { useNavigate } from 'react-router-dom';
 import './DMDashboard.css'; // Import custom CSS for additional styling
@@ -129,51 +129,63 @@ const DMDashboard = ({ setStorename }) => {
                 </Col>
             </Row>
 
-            {/* Table Section */}
+            {/* Table Section for Larger Screens */}
             {!loading && !error && marketData.length > 0 && (
-                <Row className="justify-content-center animate__animated animate__fadeIn">
-                    <Col md={12} lg={12}>
-                        <Table striped bordered hover responsive className="custom-table bg-light">
-                            <thead className="table-pink">
-                                <tr>
-                                    <th>SINO</th>
-                                    <th>Store Name</th>
-                                    <th>Completed</th>
-                                    <th>Not Completed</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {marketData.map((store, index) => (
-                                    <tr key={index}>
-                                        <td>{index + 1}</td>
-                                        <td
-                                            style={{ cursor: 'pointer' }}
-                                            onClick={() => handleStore(store.storename)}
-                                            className="text-pink-hover"
-                                        >
-                                            {store.storename}
-                                        </td>
-                                        <td>
-                                            <span
-                                                   
-                                            >
-                                                {store.completed}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span
-                                                   
-                                            >
-                                                {store.not_completed}
-                                            </span>
-                                        </td>
-                                        
+                <>
+                    {/* Table for Larger Screens */}
+                    <Row className="justify-content-center d-none d-md-block animate__animated animate__fadeIn">
+                        <Col md={12} lg={12}>
+                            <Table striped bordered hover responsive className="custom-table bg-light">
+                                <thead className="table-pink">
+                                    <tr>
+                                        <th>SINO</th>
+                                        <th>Store Name</th>
+                                        <th>Completed</th>
+                                        <th>Not Completed</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                    </Col>
-                </Row>
+                                </thead>
+                                <tbody>
+                                    {marketData.map((store, index) => (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => handleStore(store.storename)}
+                                                className="text-pink-hover"
+                                            >
+                                                {store.storename}
+                                            </td>
+                                            <td>{store.completed}</td>
+                                            <td>{store.not_completed}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                        </Col>
+                    </Row>
+
+                    {/* Cards for Small Screens */}
+                    <Row className="justify-content-center d-block d-md-none animate__animated animate__fadeIn">
+                        {marketData.map((store, index) => (
+                            <Col key={index} sm={12} className="mb-3">
+                                <Card
+                                    onClick={() => handleStore(store.storename)}
+                                    style={{ cursor: 'pointer' }}
+                                    className="text-pink-hover"
+                                >
+                                    <Card.Body>
+                                        <Card.Title className='text-pink fw-bolder'>{store.storename}</Card.Title>
+                                        <Card.Text>
+                                            <strong className='text-success fw-bolder'>Completed:</strong> {store.completed}
+                                            <br />
+                                            <strong className='text-danger fw-bolder'>Not Completed:</strong> {store.not_completed}
+                                        </Card.Text>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                </>
             )}
 
             {/* No Data Found Message */}

@@ -21,12 +21,14 @@ import  imageUpload  from "../components/imageUpload.js";
  import createquestion from  '../components/createquestion.js'
  import getQuestion from '../components/getQuestion.js';
  import deletequestion from '../components/deletequestion.js'
+ import getntid from '../components/getntid.js'
 
 const router = express.Router();
 
 router.post('/login', login);
 router.post('/register', register);
 router.get('/stores', stores);
+router.get('/getntid', getntid);
 router.get('/getdmstats', getDmStats);
 router.get('/getmarkets', getmarkets);
 router.get('/getmarketwise', getMarketWiseStats);

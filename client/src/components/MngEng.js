@@ -9,7 +9,7 @@ import fetchStores from "./fetchStores";
 import { useEffect } from "react";
 import { useRef } from "react";
 import { Form } from "react-bootstrap";
-
+import getntid from "./getntid";
 const MngEvg = ({ onverify }) => {
     const [showModal, setShowModal] = useState(false);
     const [modalContent, setModalContent] = useState("");
@@ -23,6 +23,11 @@ const MngEvg = ({ onverify }) => {
         const [selectedStore, setSelectedStore] = useState('');
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
         const dropdownRef = useRef(null);
+        const [filteredntid, setFilteredNTID] = useState(false);
+         const [ntidsdata, setNtidsdata] = useState([]);
+          useEffect(() => {
+                setFilteredNTID(ntidsdata.includes(ntid));
+            }, [ntid, ntidsdata]);
 
     useEffect(() => {
         const getStoresData = async () => {
@@ -34,6 +39,15 @@ const MngEvg = ({ onverify }) => {
                 setStores(data);
             }
         };
+         const getntids = async () => {
+            const data = await getntid();
+            if (data.error) {
+                setError(data.error);
+            } else {
+                setNtidsdata(data.map(stores => stores.ntid));
+            }
+        };
+        getntids();
 
         getStoresData();
     }, []);
@@ -102,6 +116,10 @@ const MngEvg = ({ onverify }) => {
            };
        }, []);
 
+       const handleModalClose = () => {
+        setShowModal(false);
+        setFilteredNTID(false);
+    };
     
 
     return (
@@ -167,75 +185,83 @@ const MngEvg = ({ onverify }) => {
             </Container>
 
             {/* Modal */}
-            <Modal show={showModal} onHide={
-                () =>
-                 setShowModal(false)
-                 } centered size="md">
-                {username ?
-                    <div className="text-center p-4">
-                        <FaCheckCircle size={50} color="green" className="mb-3" /> {/* Verified Icon */}
-                        <h4 className="fw-bold text-success">Verified</h4>
-                        <p className="fw-semibold text-primary">{username}</p> {/* Styled Name */}
-                        <h4 className="fw-bolder"><IoIosTime className="fs-1" /> Wait a movement ...</h4>
-                    </div>
-                    :
-                    <Modal.Body className="text-center p-5">
-                        <Modal.Title className="w-100 text-center mb-4 fw-bolder text-gradient">
-                            {modalContent}
-                        </Modal.Title>
-                        <input
-                            className="form-control text-center w-100"
-                            type="text"
-                            placeholder="Enter NTID"
-                            onChange={(e) => setNtid(e.target.value)}
-                            disabled={isVerifying} // Disable input while verifying
-                        />
-                           <Form.Group className="mb-3 position-relative mt-2">
-                            <Form.Control
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    setIsDropdownOpen(true);
-                                }}
-                                onFocus={() => setIsDropdownOpen(true)}
-                                disabled={isVerifying}
-                                placeholder="Search for a store"
-                            />
-                            {isDropdownOpen && filteredStores.length > 0 && (
-                                <div ref={dropdownRef} className="dropdown-menu show position-absolute w-100" style={{height:'20rem', overflowY:'auto'}}>
-                                    {filteredStores.map((store, index) => (
-                                        <div
-                                            key={index}
-                                            className="dropdown-item"
-                                            onClick={() => handleStoreSelect(store.storeaddress)}
-                                            style={{ cursor: 'pointer' }}
-                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                        >
-                                            {store.storeaddress}
-                                        </div>
-                                    ))}
+            <Modal show={showModal} onHide={handleModalClose} centered size="md">
+                            {username ? (
+                                <div className="text-center p-0 p-md-4 p-lg-4">
+                                    <FaCheckCircle size={50} color="green" className="mb-3" />
+                                    <h4 className="fw-bold text-success">Verified</h4>
+                                    <p className="fw-semibold text-primary">{username}</p>
+                                    <h4 className="fw-bolder">
+                                        <IoIosTime className="fs-1" /> Wait a moment ...
+                                    </h4>
                                 </div>
+                            ) : (
+                                <Modal.Body className="text-center p-4 p-md-5">
+                                    <Modal.Title className="w-100 text-center mb-4 fw-bolder text-gradient">
+                                        {modalContent}
+                                    </Modal.Title>
+                                    <div className={`d-flex border rounded ${filteredntid ? "border-success fw-bolder" : ""}`}>
+                                        <input
+                                            className="form-control border-0 shadow-none text-center w-100"
+                                            type="text"
+                                            placeholder="Enter NTID"
+                                            onChange={(e) => setNtid(e.target.value)}
+                                            disabled={isVerifying}
+                                        />
+                                        {filteredntid && (
+                                            <FaCheckCircle className="text-success mt-2 me-2" />
+                                        )}
+                                    </div>
+            
+                                    {filteredntid && (
+                                        <Form.Group className="mb-3 position-relative mt-2">
+                                            <Form.Control
+                                                type="text"
+                                                value={searchTerm}
+                                                onChange={(e) => {
+                                                    setSearchTerm(e.target.value);
+                                                    setIsDropdownOpen(true);
+                                                }}
+                                                onFocus={() => setIsDropdownOpen(true)}
+                                                disabled={isVerifying}
+                                                placeholder="Search for a store address"
+                                            />
+                                            {isDropdownOpen && filteredStores.length > 0 && (
+                                                <div ref={dropdownRef} className="dropdown-menu show position-absolute w-100">
+                                                    {filteredStores.map((store, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="dropdown-item"
+                                                            onClick={() => handleStoreSelect(store.storeaddress)}
+                                                            style={{ cursor: 'pointer' }}
+                                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                                        >
+                                                            {store.storeaddress}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </Form.Group>
+                                    )}
+            
+                                    <Button
+                                        variant="success"
+                                        className="w-100 mt-4"
+                                        onClick={handleNtid}
+                                        disabled={isVerifying || !filteredntid || !selectedStore}
+                                    >
+                                        {isVerifying ? "Verifying..." : "Verify"}
+                                    </Button>
+            
+                                    {error && (
+                                        <div className="alert alert-danger mt-2" role="alert">
+                                            {error}
+                                        </div>
+                                    )}
+                                </Modal.Body>
                             )}
-                        </Form.Group>
-                        <Button
-                            variant="success"
-                            className="w-100 mt-4"
-                            onClick={handleNtid}
-                            disabled={isVerifying} // Disable button while verifying
-                        >
-                            {isVerifying ? 'Verifying...' : 'Verify'}
-                        </Button>
-                        {
-                            error &&
-                            <div class="alert alert-danger mt-2" role="alert">
-                                {error}
-                            </div>
-                        }
-                    </Modal.Body>
-                }
-            </Modal>
+                        </Modal>
         </div>
     );
 };

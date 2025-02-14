@@ -1,14 +1,17 @@
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import db from '../dbConnection/db.js';
-import AWS from 'aws-sdk';
+import dotenv from 'dotenv';
 
-// Configure AWS SDK
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+dotenv.config(); // Load environment variables
+
+// Create an S3 client instance using AWS SDK v3
+const s3 = new S3Client({
   region: process.env.AWS_BUCKET_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
-
-const s3 = new AWS.S3();
 
 const uploadeddata = async (req, res) => {
   try {
@@ -34,16 +37,20 @@ const uploadeddata = async (req, res) => {
       return res.status(404).json({ success: false, message: "No data found for this ID" });
     }
 
-    // Generate signed URLs for images stored in S3
+    // Generate signed URLs for images stored in S3 using AWS SDK v3
     const imagesWithSignedUrls = await Promise.all(
       results.map(async (image) => {
         const params = {
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: image.url,
-          Expires: 3600,
+          Expires: 3600, // URL expiration time in seconds
         };
 
-        const signedUrl = await s3.getSignedUrlPromise('getObject', params);
+        // Create the GetObjectCommand
+        const command = new GetObjectCommand(params);
+
+        // Get the signed URL using getSignedUrl from the S3 client
+        const signedUrl = await s3.getSignedUrl(command);
 
         return {
           ...image,

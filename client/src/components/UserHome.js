@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import validatingNtid from './Validatingntid';
 import fetchStores from "./fetchStores";
 import "./UserHome.css";
+import getntid from "./getntid";
 
 const UserHome = ({ onverify }) => {
     const [showModal, setShowModal] = useState(false);
@@ -15,9 +16,12 @@ const UserHome = ({ onverify }) => {
     const [username, setUsername] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [stores, setStores] = useState([]);
+    const [ntidsdata, setNtidsdata] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStore, setSelectedStore] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [filteredntid, setFilteredNTID] = useState(false);
+
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
@@ -30,8 +34,21 @@ const UserHome = ({ onverify }) => {
                 setStores(data);
             }
         };
+        const getntids = async () => {
+            const data = await getntid();
+            if (data.error) {
+                setError(data.error);
+            } else {
+                setNtidsdata(data.map(stores => stores.ntid));
+            }
+        };
+        getntids();
         getStoresData();
     }, []);
+
+    useEffect(() => {
+        setFilteredNTID(ntidsdata.includes(ntid));
+    }, [ntid, ntidsdata]);
 
     const filteredStores = stores.filter((store) =>
         store.storeaddress.toLowerCase().includes(searchTerm.toLowerCase())
@@ -87,13 +104,18 @@ const UserHome = ({ onverify }) => {
         };
     }, []);
 
+    const handleModalClose = () => {
+        setShowModal(false);
+        setFilteredNTID(false);
+    };
+
     return (
         <div className="min-vh-100" style={{
             background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
         }}>
-            <Container fluid className="d-flex flex-column   p-0 p-md-4 p-lg-4">
+            <Container fluid className="d-flex flex-column p-0 p-md-4 p-lg-4">
                 {/* Header Section */}
-                <Button className=" mt-2 ms-auto btn-lg fw-bolder shadow-lg text-gradient" style={{ cursor: 'pointer' }} onClick={() => navigate('/login')}>
+                <Button className="mt-2 ms-auto btn-lg fw-bolder shadow-lg text-gradient" style={{ cursor: 'pointer' }} onClick={() => navigate('/login')}>
                     Login  <FaArrowCircleRight className="text-success shadow-lg" />
                 </Button>
 
@@ -144,7 +166,7 @@ const UserHome = ({ onverify }) => {
                                     Stay compliant with industry regulations and guidelines.
                                     Monitor and maintain regulatory requirements effectively.
                                 </Card.Text>
-                                <Button onClick={() => openModal("compliance")} className="btn  btn-primary mt-auto fw-bold action-button">
+                                <Button onClick={() => openModal("compliance")} className="btn btn-primary mt-auto fw-bold action-button">
                                     View Compliance
                                 </Button>
                             </Card.Body>
@@ -154,7 +176,7 @@ const UserHome = ({ onverify }) => {
             </Container>
 
             {/* Modal */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
+            <Modal show={showModal} onHide={handleModalClose} centered size="md">
                 {username ? (
                     <div className="text-center p-0 p-md-4 p-lg-4">
                         <FaCheckCircle size={50} color="green" className="mb-3" />
@@ -169,50 +191,56 @@ const UserHome = ({ onverify }) => {
                         <Modal.Title className="w-100 text-center mb-4 fw-bolder text-gradient">
                             {modalContent}
                         </Modal.Title>
-                        <input
-                            className="form-control text-center w-100"
-                            type="text"
-                            placeholder="Enter NTID"
-                            onChange={(e) => setNtid(e.target.value)}
-                            disabled={isVerifying}
-                        />
-
-                        {/* Fixed Select Dropdown */}
-                        <Form.Group className="mb-3 position-relative mt-2">
-                            <Form.Control
+                        <div className={`d-flex border rounded ${filteredntid ? "border-success fw-bolder" : ""}`}>
+                            <input
+                                className="form-control border-0 shadow-none text-center w-100"
                                 type="text"
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    setIsDropdownOpen(true);
-                                }}
-                                onFocus={() => setIsDropdownOpen(true)}
+                                placeholder="Enter NTID"
+                                onChange={(e) => setNtid(e.target.value)}
                                 disabled={isVerifying}
-                                placeholder="Search for a store address"
                             />
-                            {isDropdownOpen && filteredStores.length > 0 && (
-                                <div ref={dropdownRef} className="dropdown-menu show position-absolute w-100">
-                                    {filteredStores.map((store, index) => (
-                                        <div
-                                            key={index}
-                                            className="dropdown-item"
-                                            onClick={() => handleStoreSelect(store.storeaddress)}
-                                            style={{ cursor: 'pointer' }}
-                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                                        >
-                                            {store.storeaddress}
-                                        </div>
-                                    ))}
-                                </div>
+                            {filteredntid && (
+                                <FaCheckCircle className="text-success mt-2 me-2" />
                             )}
-                        </Form.Group>
+                        </div>
+
+                        {filteredntid && (
+                            <Form.Group className="mb-3 position-relative mt-2">
+                                <Form.Control
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setIsDropdownOpen(true);
+                                    }}
+                                    onFocus={() => setIsDropdownOpen(true)}
+                                    disabled={isVerifying}
+                                    placeholder="Search for a store address"
+                                />
+                                {isDropdownOpen && filteredStores.length > 0 && (
+                                    <div ref={dropdownRef} className="dropdown-menu show position-absolute w-100">
+                                        {filteredStores.map((store, index) => (
+                                            <div
+                                                key={index}
+                                                className="dropdown-item"
+                                                onClick={() => handleStoreSelect(store.storeaddress)}
+                                                style={{ cursor: 'pointer' }}
+                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                                                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+                                            >
+                                                {store.storeaddress}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </Form.Group>
+                        )}
 
                         <Button
                             variant="success"
                             className="w-100 mt-4"
                             onClick={handleNtid}
-                            disabled={isVerifying}
+                            disabled={isVerifying || !filteredntid || !selectedStore}
                         >
                             {isVerifying ? "Verifying..." : "Verify"}
                         </Button>

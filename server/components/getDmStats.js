@@ -10,7 +10,7 @@ const getDmStats = async (req, res) => {
     try {
         // Step 1: Get all stores for the given DM name
         const [marketData] = await db.promise().query(
-            `SELECT storename, storeaddress FROM marketStructure WHERE dmname = ?`,
+            `SELECT storename, storeaddress FROM marketstructure WHERE dmname = ?`,
             [dmname]
         );
 

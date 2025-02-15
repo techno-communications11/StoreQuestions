@@ -29,7 +29,7 @@ const getImagesDataByStoreName = async (req, res) => {
                 q.type,
                 q.checklistType
              FROM images i
-             INNER JOIN marketStructure m 
+             INNER JOIN marketstructure m 
                 ON i.storeaddress = m.storeaddress
              INNER JOIN questions q 
                 ON i.question_id = q.id

@@ -39,38 +39,40 @@ const MarketDashboard = ({ setStorename }) => {
   const fetchMarketData = async (startDate = '', endDate = '') => {
     setLoading(true);
     setError(''); // Reset error state before making the API call
-  
+
     try {
       // Validate marketname
       if (!marketname || typeof marketname !== 'string') {
         setError('Invalid market name.');
         return;
       }
-  
+
       // Construct URL
       const url = new URL(`${process.env.REACT_APP_BASE_URL}/getstorewiseuploadcount`);
       url.searchParams.append('market', marketname);
       if (startDate) url.searchParams.append('startDate', startDate);
       if (endDate) url.searchParams.append('endDate', endDate);
-       console.log(marketname)
-  
+      console.log(marketname)
+
       // Fetch data
       const response = await fetch(url, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
-  
+
       // Handle response
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-  
+
       const data = await response.json();
-  
+
       if (data.success) {
         // Ensure data.data is an array before filtering
-        const filteredData = Array.isArray(data.data) ? data.data.filter(x => x.market?.toLowerCase()===marketname) : [];
+        console.log(data.data)
+        const filteredData = Array.isArray(data.data) ? data.data.filter(x => x.market === marketname) : [];
         setMarketData(filteredData);
+        console.log(filteredData, 'data')
       } else {
         setError('No data found for this market.');
       }
@@ -93,14 +95,14 @@ const MarketDashboard = ({ setStorename }) => {
   };
 
   const handleStoreChange = (storeName) => {
-    setSelectedStores(prev => 
-      prev.includes(storeName) 
+    setSelectedStores(prev =>
+      prev.includes(storeName)
         ? prev.filter(item => item !== storeName)
         : [...prev, storeName]
     );
   };
 
-  const filteredStores = marketData.filter(store => 
+  const filteredStores = marketData.filter(store =>
     selectedStores.length === 0 || selectedStores.includes(store.storename)
   );
 
@@ -127,8 +129,15 @@ const MarketDashboard = ({ setStorename }) => {
             {marketname?.toLowerCase() || localStorage.getItem('marketname')?.toLowerCase()} Dashboard
           </h3>
         </div>
-        <Button 
-          variant="outline-secondary" 
+        <Col xs={6} className="text-end">
+        <h5 className="mb-0 d-flex align-items-center justify-content-end">
+                    <span className=" me-2 live-indicator"></span>
+                        <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>
+                         {/* Live indicator */}
+                    </h5>
+        </Col>
+        <Button
+          variant="outline-secondary"
           onClick={handleReset}
           className="d-flex align-items-center"
         >
@@ -195,7 +204,7 @@ const MarketDashboard = ({ setStorename }) => {
                   <ChevronDown size={14} />
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="w-100" style={{ maxHeight: '300px', overflow: 'auto' }}>
-                  <Dropdown.Item 
+                  <Dropdown.Item
                     onClick={() => setSelectedStores([])}
                     className="text-danger"
                   >
@@ -203,8 +212,8 @@ const MarketDashboard = ({ setStorename }) => {
                   </Dropdown.Item>
                   <Dropdown.Divider />
                   {uniqueStores.map(store => (
-                    <Dropdown.Item 
-                      key={store} 
+                    <Dropdown.Item
+                      key={store}
                       onClick={() => handleStoreChange(store)}
                       active={selectedStores.includes(store)}
                     >
@@ -212,7 +221,7 @@ const MarketDashboard = ({ setStorename }) => {
                         type="checkbox"
                         label={store}
                         checked={selectedStores.includes(store)}
-                        onChange={() => {}}
+                        onChange={() => { }}
                       />
                     </Dropdown.Item>
                   ))}
@@ -243,10 +252,10 @@ const MarketDashboard = ({ setStorename }) => {
               <Table hover responsive className="mb-0">
                 <thead>
                   <tr >
-                    <th style={{backgroundColor:'#E10174',color:'white'}}>SINO</th>
-                    <th style={{backgroundColor:'#E10174',color:'white'}}>Store Name</th>
-                    <th style={{backgroundColor:'#E10174',color:'white'}} className="text-center">Completed</th>
-                    <th  style={{backgroundColor:'#E10174',color:'white'}}className="text-center">Not Completed</th>
+                    <th style={{ backgroundColor: '#E10174', color: 'white' }}>SINO</th>
+                    <th style={{ backgroundColor: '#E10174', color: 'white' }}>Store Name</th>
+                    <th style={{ backgroundColor: '#E10174', color: 'white' }} className="text-center">Completed</th>
+                    <th style={{ backgroundColor: '#E10174', color: 'white' }} className="text-center">Not Completed</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -282,7 +291,7 @@ const MarketDashboard = ({ setStorename }) => {
           <Row xs={1} md={2} className="g-2">
             {filteredStores.map((store, index) => (
               <Col key={index}>
-                <Card 
+                <Card
                   className="h-100 shadow-sm border-0"
                   onClick={() => handleStore(store.storename)}
                   style={{ cursor: 'pointer' }}
@@ -298,7 +307,7 @@ const MarketDashboard = ({ setStorename }) => {
                       </div>
                       <div className="text-danger d-flex align-items-center">
                         <XCircle size={18} className="me-2" />
-                       Not Completed {store.not_completed_count}
+                        Not Completed {store.not_completed_count}
                       </div>
                     </div>
                   </Card.Body>

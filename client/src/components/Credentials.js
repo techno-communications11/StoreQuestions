@@ -96,8 +96,8 @@ function Crediantals() {
               <div className="display-6 text-primary mb-3">
                 <FaCloudUploadAlt size={50} />
               </div>
-              <h2 className="fw-bold mb-2">Crediantals File Upload</h2>
-              <p className="text-muted">Upload your Crediantals documents here</p>
+              <h2 className="fw-bold mb-2">Credentials File Upload</h2>
+              <p className="text-muted">Upload your Credentials documents here</p>
             </div>
 
             {/* Error Message */}

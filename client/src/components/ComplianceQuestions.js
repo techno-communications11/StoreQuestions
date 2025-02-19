@@ -5,7 +5,6 @@ import {
   FaCheckCircle,
   FaTimesCircle,
   FaUpload,
-  FaCamera,
   FaSpinner,
 } from 'react-icons/fa'; // Importing React Icons
 
@@ -17,10 +16,11 @@ const ComplianceQuestions = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
-    const [fileName, setFileName] = useState(''); // State to store the file name
-    const fileInputRef = useRef(null);
-    const [captureMode, setCaptureMode] = useState(null);
-const [uploading, setUploading] = useState(false);
+  const [fileNames, setFileNames] = useState([]); // State to store the file names
+  const fileInputRef = useRef(null);
+  const [captureMode, setCaptureMode] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
   const getStores = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/questions`);
@@ -31,7 +31,7 @@ const [uploading, setUploading] = useState(false);
         setStores(data);
         // Initialize row states
         const initialState = data.reduce((acc, store) => {
-          acc[store.question] = { checked: false, file: null };
+          acc[store.question] = { checked: false, files: [] };
           return acc;
         }, {});
         setRowStates(initialState);
@@ -51,6 +51,7 @@ const [uploading, setUploading] = useState(false);
     setSelectedStore(storename);
     setOpenModal(true);
   };
+
   const handleOpenFileDialog = (mode) => {
     setCaptureMode(mode);
     if (mode === "file") {
@@ -62,8 +63,8 @@ const [uploading, setUploading] = useState(false);
 
   const handleValidate = async () => {
     const selectedRowState = rowStates[selectedStore];
-    if (!selectedRowState.file) {
-      setErrorMessage('Please select a file to upload');
+    if (!selectedRowState.files || selectedRowState.files.length === 0) {
+      setErrorMessage('Please select at least one file to upload');
       return;
     }
     const ntid = localStorage.getItem('ntid');
@@ -72,41 +73,56 @@ const [uploading, setUploading] = useState(false);
       alert('No data found');
       return;
     }
+    const now = new Date();
+    const offset = -6 * 60; // CST is UTC-6
+    const cstTime = new Date(now.getTime() + offset * 60 * 1000)
+      .toISOString()
+      .slice(0, 19) // Remove milliseconds
+      .replace("T", " ");
+
     // Get the ID from the decoded token
     const formData = new FormData();
-    formData.append('file', selectedRowState.file);
+    selectedRowState.files.forEach((file, index) => {
+      formData.append('files', file); // Append each file
+    });
     formData.append('question', selectedStore);
     formData.append('ntid', ntid);
     formData.append('storeaddress', selectedstore);
+    formData.append("createdat", cstTime); // Pass browser time
+
 
     try {
+      setUploading(true);
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadimage`, {
         method: 'POST',
         body: formData,
       });
       if (response.ok) {
-        setSuccessMessage('File Uploaded Successfully');
+        setSuccessMessage('Files Uploaded Successfully');
         setTimeout(() => setSuccessMessage(''), 3000);
         setOpenModal(false);
         setRowStates((prevState) => ({
           ...prevState,
-          [selectedStore]: { checked: false, file: null },
+          [selectedStore]: { checked: false, files: [] },
         }));
+        setFileNames([]);
       } else {
         throw new Error('File upload failed');
       }
     } catch (error) {
       console.error('Error uploading file:', error);
-      setErrorMessage('Failed to upload file.');
+      setErrorMessage('Failed to upload files.');
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleCloseModal = () => {
     setOpenModal(false);
     setErrorMessage('');
-    setFileName('')
-    setCaptureMode('')
-    fileInputRef.current=null;
+    setFileNames([]);
+    setCaptureMode('');
+    fileInputRef.current = null;
   };
 
   const handleCheckboxChange = (storename) => (e) => {
@@ -117,21 +133,15 @@ const [uploading, setUploading] = useState(false);
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
       setRowStates((prevState) => ({
         ...prevState,
-        [selectedStore]: { ...prevState[selectedStore], file },
+        [selectedStore]: { ...prevState[selectedStore], files },
       }));
-      setFileName(file.name); // Set file name
+      setFileNames(files.map((file) => file.name)); // Set file names
     }
   };
-
-
-  
-
-  
-
 
   const renderCard = (store, index) => (
     <div className="col-12 mb-3" key={index}>
@@ -270,93 +280,93 @@ const [uploading, setUploading] = useState(false);
 
           {/* Modal */}
           {openModal && (
-             <>
-                      <div className="modal-backdrop show"></div>
-                      <div className="modal show d-block" tabIndex="-1" role="dialog">
-                        <div className="modal-dialog modal-dialog-centered" role="document">
-                          <div className="modal-content border-0 shadow-lg">
-                            <div className="modal-header text-gradient text-white border-0 mt-2">
-                              <h5 className="modal-title fw-bold">{selectedStore}</h5>
-                              <button
-                                type="button"
-                                className="btn-close btn-close-dark mb-5"
-                                onClick={handleCloseModal}
-                                aria-label="Close"
-                              />
+            <>
+              <div className="modal-backdrop show"></div>
+              <div className="modal show d-block" tabIndex="-1" role="dialog">
+                <div className="modal-dialog modal-dialog-centered" role="document">
+                  <div className="modal-content border-0 shadow-lg">
+                    <div className="modal-header text-gradient text-white border-0 mt-2">
+                      <h5 className="modal-title fw-bold">{selectedStore}</h5>
+                      <button
+                        type="button"
+                        className="btn-close btn-close-dark mb-5"
+                        onClick={handleCloseModal}
+                        aria-label="Close"
+                      />
+                    </div>
+                    <div className="modal-body p-2">
+                      <div className="d-grid gap-3">
+                        {/* Hidden File Input */}
+                        <input
+                          type="file"
+                          className="d-none"
+                          ref={fileInputRef}
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleFileChange}
+                          multiple // Allow multiple files
+                        />
+
+                        {/* File Upload UI */}
+                        <div className="upload-area p-2 border-2 rounded-3 text-center">
+                          <Upload className="mb-2" size={82} />
+                          {fileNames.length > 0 && (
+                            <div className="mt-2">
+                              <span className="text-muted">Selected Files: {fileNames.join(', ')}</span>
                             </div>
-                            <div className="modal-body p-2">
-                              <div className="d-grid gap-3">
-                                {/* Hidden File Input */}
-                                <input
-                                  type="file"
-                                  className="d-none"
-                                  ref={fileInputRef}
-                                  accept="image/*"
-                                  capture="environment"
-                                  onChange={handleFileChange}
-                                />
-                
-                                {/* File Upload UI */}
-                                <div className="upload-area p-2 border-2 rounded-3 text-center">
-                                  <Upload className="mb-2" size={82} />
-                                  {fileName && (
-                                    <div className="mt-2">
-                                      <span className="text-muted">Selected File: {fileName}</span>
-                                    </div>
-                                  )}
-                                </div>
-                
-                                {/* Choose File or Use Camera */}
-                                <div className="d-flex flex-column gap-2">
-                                  <button
-                                    className="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2"
-                                    onClick={() => handleOpenFileDialog("file")}
-                                  >
-                                    <Upload size={20} />
-                                    Choose File
-                                  </button>
-                                  
-                                </div>
-                              </div>
-                            </div>
-                            <div className="modal-footer border-top">
-                              <button
-                                type="button"
-                                className="btn btn-primary d-flex align-items-center gap-2"
-                                onClick={handleValidate}
-                                disabled={uploading || !fileName}
-                              >
-                                {uploading ? <FaSpinner className="spinner-border spinner-border-sm" /> : <Upload size={20} />}
-                                Upload
-                              </button>
-                            </div>
-                          </div>
+                          )}
+                        </div>
+
+                        {/* Choose File or Use Camera */}
+                        <div className="d-flex flex-column gap-2">
+                          <button
+                            className="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2"
+                            onClick={() => handleOpenFileDialog("file")}
+                          >
+                            <Upload size={20} />
+                            Choose Files
+                          </button>
                         </div>
                       </div>
-                    </>
+                    </div>
+                    <div className="modal-footer border-top">
+                      <button
+                        type="button"
+                        className="btn btn-primary d-flex align-items-center gap-2"
+                        onClick={handleValidate}
+                        disabled={uploading || fileNames.length === 0}
+                      >
+                        {uploading ? <FaSpinner className="spinner-border spinner-border-sm" /> : <Upload size={20} />}
+                        Upload
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
         </>
       )}
 
       <style jsx>{`
-            .text-gradient {
-              background: linear-gradient(45deg, #E10174, #FF69B4);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-            }
-            .card {
-              transition: transform 0.2s;
-            }
-            .card:hover {
-              transform: translateY(-2px);
-            }
-            .modal-backdrop {
-              background-color: rgba(0, 0, 0, 0.5);
-            }
-            .border-dashed {
-              border-style: dashed !important;
-            }
-          `}</style>
+        .text-gradient {
+          background: linear-gradient(45deg, #E10174, #FF69B4);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .card {
+          transition: transform 0.2s;
+        }
+        .card:hover {
+          transform: translateY(-2px);
+        }
+        .modal-backdrop {
+          background-color: rgba(0, 0, 0, 0.5);
+        }
+        .border-dashed {
+          border-style: dashed !important;
+        }
+      `}</style>
     </div>
   );
 };

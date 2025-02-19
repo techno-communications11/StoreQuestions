@@ -17,7 +17,7 @@ const Evening = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [fileName, setFileName] = useState(''); // State to store the file name
+  const [fileNames, setFileNames] = useState([]); // State to store the file name
   const fileInputRef = useRef(null);
   const [captureMode, setCaptureMode] = useState(null); // 'camera' or 'file'
   const [uploading, setUploading] = useState(false);
@@ -56,8 +56,8 @@ const Evening = () => {
 
   const handleValidate = async () => {
     const selectedRowState = rowStates[selectedStore];
-    if (!selectedRowState.file) {
-      setErrorMessage('Please select a file to upload');
+    if (!selectedRowState.files || selectedRowState.files.length === 0) {
+      setErrorMessage('Please select at least one file to upload');
       return;
     }
     const ntid = localStorage.getItem('ntid');
@@ -66,31 +66,46 @@ const Evening = () => {
       alert('No data found');
       return;
     }
-    // Get the ID from the decoded token
+    const now = new Date();
+    const offset = -6 * 60; // CST is UTC-6
+    const cstTime = new Date(now.getTime() + offset * 60 * 1000)
+      .toISOString()
+      .slice(0, 19) // Remove milliseconds
+      .replace("T", " "); 
+      
     const formData = new FormData();
-    formData.append('file', selectedRowState.file);
+    selectedRowState.files.forEach((file) => {
+      formData.append('files', file); // Append each file
+    });
     formData.append('question', selectedStore);
     formData.append('ntid', ntid);
     formData.append('storeaddress', storename);
+    formData.append("createdat", cstTime);
+
 
     try {
+      setUploading(true);
       const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadimage`, {
         method: 'POST',
         body: formData,
       });
       if (response.ok) {
-        setSuccessMessage('File Uploaded Successfully');
+        setSuccessMessage('Files Uploaded Successfully');
+        setTimeout(() => setSuccessMessage(''), 3000); // Clear success message after 3 seconds
         setOpenModal(false);
         setRowStates((prevState) => ({
           ...prevState,
-          [selectedStore]: { checked: false, file: null },
+          [selectedStore]: { checked: false, files: [] }, // Reset files
         }));
+        setFileNames([]); // Clear file names
       } else {
         throw new Error('File upload failed');
       }
     } catch (error) {
       console.error('Error uploading file:', error);
-      setErrorMessage('Failed to upload file.');
+      setErrorMessage('Failed to upload files.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -98,12 +113,12 @@ const Evening = () => {
     setOpenModal(false);
     setErrorMessage('');
     setSuccessMessage(''); // Clear success message as well
-    setFileName('')
+    setFileNames([])
     setCaptureMode('')
-    fileInputRef.current=null;
-    
+    fileInputRef.current = null;
+
   };
- 
+
   const handleOpenFileDialog = (mode) => {
     setCaptureMode(mode);
     if (mode === "file") {
@@ -123,13 +138,13 @@ const Evening = () => {
 
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files); // Convert FileList to array
+    if (files.length > 0) {
       setRowStates((prevState) => ({
         ...prevState,
-        [selectedStore]: { ...prevState[selectedStore], file },
+        [selectedStore]: { ...prevState[selectedStore], files }, // Store array of files
       }));
-      setFileName(file.name); // Set file name
+      setFileNames(files.map((file) => file.name)); // Store file names
     }
   };
 
@@ -291,16 +306,17 @@ const Evening = () => {
                           className="d-none"
                           ref={fileInputRef}
                           accept="image/*"
-                          capture="environment"
+                          capture={captureMode === 'camera' ? 'environment' : undefined} // Enable camera capture if mode is 'camera'
                           onChange={handleFileChange}
+                          multiple // Allow multiple files
                         />
 
                         {/* File Upload UI */}
                         <div className="upload-area p-2 border-2 rounded-3 text-center">
                           <Upload className="mb-2" size={82} />
-                          {fileName && (
+                          {fileNames.length > 0 && (
                             <div className="mt-2">
-                              <span className="text-muted">Selected File: {fileName}</span>
+                              <span className="text-muted">Selected Files: {fileNames.join(', ')}</span>
                             </div>
                           )}
                         </div>
@@ -323,7 +339,7 @@ const Evening = () => {
                         type="button"
                         className="btn btn-primary d-flex align-items-center gap-2"
                         onClick={handleValidate}
-                        disabled={uploading || !fileName}
+                        disabled={uploading || !fileNames}
                       >
                         {uploading ? <FaSpinner className="spinner-border spinner-border-sm" /> : <Upload size={20} />}
                         Upload

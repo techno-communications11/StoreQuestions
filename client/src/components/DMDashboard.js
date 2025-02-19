@@ -75,11 +75,25 @@ const DMDashboard = ({ setStorename }) => {
                     {error}
                 </Alert>
             )}
+            <Row>
+                <Col>
+                <h1 className="text-start text-capitalize mb-4 text-pink animate__animated animate__fadeInDown">
 
+                    <FaStore className="me-2" /> {dmname?.toLowerCase()} Dashboard
+                </h1>
+                </Col>
+                
+                <Col xs={6} className="text-end">
+                    <h5 className="mb-0 d-flex align-items-center justify-content-end">
+                    <span className=" me-2 live-indicator"></span>
+                        <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>
+                         {/* Live indicator */}
+                    </h5>
+                </Col>
+            </Row>
             {/* Dashboard Header */}
-            <h1 className="text-center text-capitalize mb-4 text-pink animate__animated animate__fadeInDown">
-                <FaStore className="me-2" /> {dmname?.toLowerCase()} Dashboard
-            </h1>
+
+
 
             {/* Date Filter Section */}
             <Row className="justify-content-center mb-4 animate__animated animate__fadeInUp">
@@ -88,7 +102,7 @@ const DMDashboard = ({ setStorename }) => {
                         <Row>
                             <Col md={5}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Start Date</Form.Label>
+                                    <Form.Label className='fw-bolder text-success'>Start Date</Form.Label>
                                     <Form.Control
                                         type="date"
                                         value={startDate}
@@ -99,7 +113,7 @@ const DMDashboard = ({ setStorename }) => {
                             </Col>
                             <Col md={5}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>End Date</Form.Label>
+                                    <Form.Label className='fw-bolder text-success'>End Date</Form.Label>
                                     <Form.Control
                                         type="date"
                                         value={endDate}

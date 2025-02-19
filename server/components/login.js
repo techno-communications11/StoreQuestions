@@ -29,7 +29,7 @@ const login = async (req, res) => {
       if (!isMatch) {
         return res.status(400).json({ message: 'Invalid credentials.' });
       }
-
+ console.log(result)
       // Create a JWT token for the user
       const token = jwt.sign(
         {
@@ -42,7 +42,7 @@ const login = async (req, res) => {
         process.env.JWT_SECRET,
         { expiresIn: '1h' }  // Token will expire in 1 hour
       );
-
+ console.log(result[0].name)
       res.status(200).json({
         message: 'Login successful!',
         token,

@@ -142,8 +142,7 @@ const Register = () => {
                   </div>
 
                   {/* Additional input if role is district manager */}
-                  {userData.role === 'district_manager' && (
-                    <>
+                
                       <div className="mb-3">
                         <input
                           type="text"
@@ -156,10 +155,6 @@ const Register = () => {
                           required
                         />
                       </div>
-
-
-                    </>
-                  )}
 
                   {userData.role === 'market_manager' && (
                     <div className="mb-3">

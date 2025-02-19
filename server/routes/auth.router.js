@@ -42,16 +42,11 @@ router.get('/getstorewiseuploadcount', getstorewiseuploadcount);
 router.get('/questions', questions);
 router.put('/update-password',authenticateToken, resetpassword);
  router.post('/validatentid',validatentid)
-router.post('/crediantalsFile', upload.single('file'), handleCrediantalsFileUpload);
-router.post('/marketstructureFile', upload.single('file'), (req, res, next) => {
+router.post('/crediantalsFile',  handleCrediantalsFileUpload);
+router.post('/marketstructureFile',  (req, res, next) => {
   console.log('Uploaded file:', req.file); // Log file details
   next();
 }, handleMarketStructureFileUpload);
-router.post("/uploadimage", upload.single("file"), (req, res) => {
-    if (!req.file) {
-      return res.status(400).json({ error: "No image uploaded" });
-    }
-    imageUpload(req, res);
-  });
+router.post("/uploadimage", upload.array('files', 5), imageUpload);
 
 export default router;

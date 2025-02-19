@@ -17,10 +17,9 @@ const Morning = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [fileName, setFileName] = useState(''); // State to store the file name
+  const [fileNames, setFileNames] = useState([]); // State to store file names
   const fileInputRef = useRef(null);
   const [captureMode, setCaptureMode] = useState(null); // 'camera' or 'file'
-
 
   const getStores = async () => {
     try {
@@ -31,7 +30,7 @@ const Morning = () => {
       const data = await response.json();
       setStores(data);
       const initialState = data.reduce((acc, store) => {
-        acc[store.question] = { checked: false, file: null };
+        acc[store.question] = { checked: false, files: [] }; // Store files as an array
         return acc;
       }, {});
       setRowStates(initialState);
@@ -52,40 +51,48 @@ const Morning = () => {
     setOpenModal(true);
   };
 
-
-
-
   const handleValidate = async () => {
     const selectedRowState = rowStates[selectedStore];
-    if (!selectedRowState.file) {
-      setErrorMessage('Please select a file to upload');
+    if (!selectedRowState.files || selectedRowState.files.length === 0) {
+      setErrorMessage('Please select at least one file to upload');
       return;
     }
 
     const ntid = localStorage.getItem('ntid');
-    
     const selectedstore = localStorage.getItem('selectedstore');
 
     const formData = new FormData();
-    formData.append('file', selectedRowState.file);
+    const now = new Date();
+    const offset = -6 * 60; // CST is UTC-6
+    const cstTime = new Date(now.getTime() + offset * 60 * 1000)
+      .toISOString()
+      .slice(0, 19) // Remove milliseconds
+      .replace("T", " ");   
+      
+      
+      selectedRowState.files.forEach((file, index) => {
+      formData.append('files', file); // Append each file
+    });
     formData.append('question', selectedStore);
     formData.append('ntid', ntid);
     formData.append('storeaddress', selectedstore);
+    formData.append("createdat", cstTime);
+
 
     setUploading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadimage`, {
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/uploadimage`, { // Update endpoint to handle multiple files
         method: 'POST',
         body: formData,
       });
       if (response.ok) {
-        setSuccessMessage('File Uploaded Successfully');
+        setSuccessMessage('Files Uploaded Successfully');
         setOpenModal(false);
         setRowStates((prevState) => ({
           ...prevState,
-          [selectedStore]: { checked: false, file: null },
+          [selectedStore]: { checked: false, files: [] }, // Clear files
         }));
-        setFileName(''); // Clear file name
+        setFileNames([]); // Clear file names
         if (fileInputRef.current) {
           fileInputRef.current.value = ''; // Clear file input
         }
@@ -93,15 +100,15 @@ const Morning = () => {
         throw new Error('File upload failed');
       }
     } catch (error) {
-      console.error('Error uploading file:', error);
-      setErrorMessage('Failed to upload file.');
+      console.error('Error uploading files:', error);
+      setErrorMessage('Failed to upload files.');
     } finally {
       setUploading(false);
     }
   };
 
   const handleOpenFileDialog = (mode) => {
-    setCaptureMode(mode);
+    setCaptureMode(mode); 
     if (mode === "file") {
       fileInputRef.current?.click();
     } else if (mode === "camera") {
@@ -113,9 +120,9 @@ const Morning = () => {
     setOpenModal(false);
     setErrorMessage('');
     setSuccessMessage('');
-    setFileName(''); // Clear file name
-    setCaptureMode('')
-    fileInputRef.current=null;
+    setFileNames([]); // Clear file names
+    setCaptureMode('');
+    fileInputRef.current = null;
   };
 
   const handleCheckboxChange = (storename) => (e) => {
@@ -126,16 +133,15 @@ const Morning = () => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files); // Convert FileList to array
+    if (files.length > 0) {
       setRowStates((prevState) => ({
         ...prevState,
-        [selectedStore]: { ...prevState[selectedStore], file },
+        [selectedStore]: { ...prevState[selectedStore], files },
       }));
-      setFileName(file.name); // Set file name
+      setFileNames(files.map((file) => file.name)); // Set file names
     }
   };
-
 
   const renderCard = (store, index) => (
     <div className="col-12 mb-3" key={index}>
@@ -289,15 +295,16 @@ const Morning = () => {
                           ref={fileInputRef}
                           accept="image/*"
                           capture="environment"
+                          multiple // Allow multiple files
                           onChange={handleFileChange}
                         />
 
                         {/* File Upload UI */}
                         <div className="upload-area p-2 border-2 rounded-3 text-center">
                           <Upload className="mb-2" size={82} />
-                          {fileName && (
+                          {fileNames.length > 0 && (
                             <div className="mt-2">
-                              <span className="text-muted">Selected File: {fileName}</span>
+                              <span className="text-muted">Selected Files: {fileNames.join(', ')}</span>
                             </div>
                           )}
                         </div>
@@ -309,9 +316,8 @@ const Morning = () => {
                             onClick={() => handleOpenFileDialog("file")}
                           >
                             <Upload size={20} />
-                            Choose File
+                            Choose Files
                           </button>
-
                         </div>
                       </div>
                     </div>
@@ -320,7 +326,7 @@ const Morning = () => {
                         type="button"
                         className="btn btn-primary d-flex align-items-center gap-2"
                         onClick={handleValidate}
-                        disabled={uploading || !fileName}
+                        disabled={uploading || fileNames.length === 0}
                       >
                         {uploading ? <FaSpinner className="spinner-border spinner-border-sm" /> : <Upload size={20} />}
                         Upload

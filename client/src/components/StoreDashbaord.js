@@ -182,8 +182,18 @@ const StoreDashboard = ({ marketName, setStorename }) => {
     <Container fluid className="py-4 bg-light">
       {/* Date Filter Section */}
       <Card className="shadow-sm mb-2">
-        <Card.Header className="bg-white">
-          <h5 className="mb-0">Date Filter</h5>
+        <Card.Header className=" d-flex bg-white">
+          <Col xs={6} md={10}>
+          <h5 className=" text-start mb-0">Date Filter</h5>
+          </Col>
+          
+           <Col xs={6} md={2} className="text-end">
+           <h5 className="mb-0 d-flex align-items-center justify-content-end">
+                    <span className=" me-2 live-indicator"></span>
+                        <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>
+                         {/* Live indicator */}
+                    </h5>
+                        </Col>
         </Card.Header>
         <Card.Body>
           <Form className="row g-3">

@@ -13,6 +13,8 @@ import {
   Dropdown,
   Badge
 } from 'react-bootstrap';
+import * as XLSX from 'xlsx';
+import { IoMdDownload } from "react-icons/io";
 import {
   Calendar,
   Store,
@@ -119,32 +121,53 @@ const MarketDashboard = ({ setStorename }) => {
     fetchMarketData();
   };
 
+  const handleDownload = () => {
+    const worksheet = XLSX.utils.json_to_sheet(marketData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Market Data');
+
+    // Generate Excel file and trigger download
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'MarketData.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Container fluid className="py-4 bg-light">
       {/* Dashboard Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h3 className="mb-0  text-pink text-capitalize">
-            <BarChart3 className=" d-inline " size={24} />
-            {marketname?.toLowerCase() || localStorage.getItem('marketname')?.toLowerCase()} Dashboard
-          </h3>
-        </div>
-        <Col xs={6} className="text-end">
-        <h5 className="mb-0 d-flex align-items-center justify-content-end">
-                    <span className=" me-2 live-indicator"></span>
-                        <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>
-                         {/* Live indicator */}
-                    </h5>
-        </Col>
-        <Button
-          variant="outline-secondary"
-          onClick={handleReset}
-          className="d-flex align-items-center"
-        >
-          <RefreshCw size={16} className="me-2" />
-          Reset Filters
-        </Button>
-      </div>
+      <Row className="d-flex justify-content-between align-items-center mb-4">
+  {/* Market Name and Dashboard Title */}
+  <Col xs={12} md={6} className="mb-2 mb-md-0 text-pink text-capitalize text-center text-md-start">
+  <h1>
+  <BarChart3 className="d-inline me-2" size={24} />
+  {marketname?.toLowerCase() || localStorage.getItem('marketname')?.toLowerCase()} Dashboard
+  </h1>
+    
+  </Col>
+
+  {/* Live Indicator */}
+  <Col xs={12} md={6} className="text-center text-md-end mb-2 mb-md-0">
+    <h5 className="mb-0 d-flex align-items-center justify-content-center justify-content-md-end">
+      <span className="me-2 live-indicator"></span>
+      <span className="me-2 fw-bold text-danger">Default Today's Data</span>
+    </h5>
+  </Col>
+
+  {/* Reset Button */}
+  <Col xs={12} md={2} className="d-flex justify-content-center justify-content-end ms-auto">
+    <Button variant="outline-secondary" onClick={handleReset} className="d-flex align-items-center w-100 text-center ">
+      <RefreshCw  className="me-2" />
+      Reset Filters
+    </Button>
+  </Col>
+</Row>
+
 
       {/* Filters Card */}
       <Card className="shadow-sm border-0 mb-2">
@@ -188,7 +211,7 @@ const MarketDashboard = ({ setStorename }) => {
                 </Row>
               </Form>
             </Col>
-            <Col lg={6}>
+            <Col lg={4}>
               <Form.Label className="d-flex align-items-center">
                 <Store size={14} className="me-2" />
                 Store Filter
@@ -227,6 +250,10 @@ const MarketDashboard = ({ setStorename }) => {
                   ))}
                 </Dropdown.Menu>
               </Dropdown>
+            </Col>
+            <Col xs={12} md={2}>
+              <Button onClick={handleDownload}  style={{marginTop:'2rem'}} variant="pink" className="px-4 w-100 "> <IoMdDownload className='me-2' />
+                Download</Button>
             </Col>
           </Row>
         </Card.Body>

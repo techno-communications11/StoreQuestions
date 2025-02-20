@@ -11,6 +11,9 @@ import {
   Row,
   Col
 } from 'react-bootstrap';
+import { IoMdDownload } from "react-icons/io";
+import * as XLSX from 'xlsx';
+
 import {
   BsCalendarDate,
   BsShop,
@@ -36,7 +39,7 @@ const StoreDashboard = ({ marketName, setStorename }) => {
   const navigate = useNavigate();
 
   // Memoized unique values for filters
-  const uniqueMarkets = useMemo(() => 
+  const uniqueMarkets = useMemo(() =>
     [...new Set(marketData.map(store => store.market))],
     [marketData]
   );
@@ -46,7 +49,7 @@ const StoreDashboard = ({ marketName, setStorename }) => {
     if (selectedFilters.markets.length === 0) {
       return [...new Set(marketData.map((store) => store.storename))];
     }
-  
+
     // Otherwise, filter stores by selected markets
     return [
       ...new Set(
@@ -61,11 +64,11 @@ const StoreDashboard = ({ marketName, setStorename }) => {
   const fetchMarketData = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const currentMarket = marketName || localStorage.getItem('marketName');
       const url = new URL(`${process.env.REACT_APP_BASE_URL}/getstorewiseuploadcount`);
-      
+
       // Add all query parameters
       const params = new URLSearchParams({
         market: currentMarket,
@@ -74,15 +77,15 @@ const StoreDashboard = ({ marketName, setStorename }) => {
         ...(selectedFilters.markets.length && { markets: selectedFilters.markets.join(',') }),
         ...(selectedFilters.stores.length && { stores: selectedFilters.stores.join(',') })
       });
-      
+
       url.search = params.toString();
-      
+
       const response = await fetch(url, {
         headers: { 'Content-Type': 'application/json' }
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setMarketData(data.data);
       } else {
@@ -126,6 +129,22 @@ const StoreDashboard = ({ marketName, setStorename }) => {
     setStorename(storeName);
     navigate('/detaileddata');
   };
+  const handleDownload = () => {
+    const worksheet = XLSX.utils.json_to_sheet(marketData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Market Data');
+  
+    // Generate Excel file and trigger download
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'MarketData.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Filter dropdown component
   const FilterDropdown = ({ title, items, filterType, selectedItems }) => (
@@ -139,8 +158,8 @@ const StoreDashboard = ({ marketName, setStorename }) => {
         </Dropdown.Item>
         <Dropdown.Divider />
         {items.map(item => (
-          <Dropdown.Item 
-            key={item} 
+          <Dropdown.Item
+            key={item}
             onClick={(e) => {
               e.stopPropagation();
               handleFilterChange(filterType, item);
@@ -150,7 +169,7 @@ const StoreDashboard = ({ marketName, setStorename }) => {
               type="checkbox"
               label={item}
               checked={selectedItems.includes(item)}
-              onChange={() => {}}
+              onChange={() => { }}
               onClick={(e) => e.stopPropagation()}
             />
           </Dropdown.Item>
@@ -162,10 +181,10 @@ const StoreDashboard = ({ marketName, setStorename }) => {
   // Filtered data based on selected filters
   const filteredData = useMemo(() => {
     return marketData.filter(store => {
-      const marketMatch = selectedFilters.markets.length === 0 || 
-                         selectedFilters.markets.includes(store.market);
-      const storeMatch = selectedFilters.stores.length === 0 || 
-                        selectedFilters.stores.includes(store.storename);
+      const marketMatch = selectedFilters.markets.length === 0 ||
+        selectedFilters.markets.includes(store.market);
+      const storeMatch = selectedFilters.stores.length === 0 ||
+        selectedFilters.stores.includes(store.storename);
       return marketMatch && storeMatch;
     });
   }, [marketData, selectedFilters]);
@@ -183,17 +202,17 @@ const StoreDashboard = ({ marketName, setStorename }) => {
       {/* Date Filter Section */}
       <Card className="shadow-sm mb-2">
         <Card.Header className=" d-flex bg-white">
-          <Col xs={6} md={10}>
-          <h5 className=" text-start mb-0">Date Filter</h5>
+          <Col xs={4} md={10}>
+            <h5 className=" text-start mb-0">Date Filter</h5>
           </Col>
-          
-           <Col xs={6} md={2} className="text-end">
-           <h5 className="mb-0 d-flex align-items-center justify-content-end">
-                    <span className=" me-2 live-indicator"></span>
-                        <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>
-                         {/* Live indicator */}
-                    </h5>
-                        </Col>
+
+          <Col xs={8} md={2} className="text-end">
+            <h5 className="mb-0 d-flex align-items-center justify-content-end">
+              <span className=" me-2 live-indicator"></span>
+              <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>
+              {/* Live indicator */}
+            </h5>
+          </Col>
         </Card.Header>
         <Card.Body>
           <Form className="row g-3">
@@ -231,6 +250,7 @@ const StoreDashboard = ({ marketName, setStorename }) => {
                 Apply Filter
               </Button>
             </Col>
+            
           </Form>
         </Card.Body>
       </Card>
@@ -239,7 +259,7 @@ const StoreDashboard = ({ marketName, setStorename }) => {
       <Card className="shadow-sm mb-2">
         <Card.Body>
           <Row className="g-3">
-            <Col xs={12} md={6}>
+            <Col xs={12} md={5}>
               <FilterDropdown
                 title="Market Filter"
                 items={uniqueMarkets}
@@ -247,13 +267,17 @@ const StoreDashboard = ({ marketName, setStorename }) => {
                 selectedItems={selectedFilters.markets}
               />
             </Col>
-            <Col xs={12} md={6}>
+            <Col xs={12} md={5}>
               <FilterDropdown
                 title="Store Filter"
                 items={uniqueStores}
                 filterType="stores"
                 selectedItems={selectedFilters.stores}
               />
+            </Col>
+            <Col xs={12} md={2}>
+              <Button onClick={handleDownload} variant="pink" className="px-4 w-100"> <IoMdDownload className='me-2' />
+              Download</Button>
             </Col>
           </Row>
         </Card.Body>
@@ -277,8 +301,8 @@ const StoreDashboard = ({ marketName, setStorename }) => {
                   <thead>
                     <tr>
                       {['SINO', 'Market', 'Store Name', 'Completed', 'Not Completed'].map((header) => (
-                        <th 
-                          key={header} 
+                        <th
+                          key={header}
                           className="text-center"
                           style={{ backgroundColor: '#E10174', color: 'white' }}
                         >

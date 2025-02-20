@@ -4,6 +4,9 @@ import { Table, Spinner, Alert, Form, Button, Container, Row, Col, Card } from '
 import { FaFilter, FaSyncAlt, FaStore } from 'react-icons/fa'; // Importing React Icons
 import { useNavigate } from 'react-router-dom';
 import './DMDashboard.css'; // Import custom CSS for additional styling
+import * as XLSX from 'xlsx';
+import { IoMdDownload } from "react-icons/io";
+
 
 const DMDashboard = ({ setStorename }) => {
     const [marketData, setMarketData] = useState([]);
@@ -61,6 +64,22 @@ const DMDashboard = ({ setStorename }) => {
         setEndDate('');
         fetchMarketData('', '');
     };
+    const handleDownload = () => {
+        const worksheet = XLSX.utils.json_to_sheet(marketData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Market Data');
+
+        // Generate Excel file and trigger download
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'MarketData.xlsx';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <Container fluid className="mt-4">
@@ -76,18 +95,18 @@ const DMDashboard = ({ setStorename }) => {
                 </Alert>
             )}
             <Row>
-                <Col>
-                <h1 className="text-start text-capitalize mb-4 text-pink animate__animated animate__fadeInDown">
+                <Col xs={12} md={6} className="text-start">
+                    <h1 className="text-start  text-capitalize mb-4 text-pink animate__animated animate__fadeInDown">
 
-                    <FaStore className="me-2" /> {dmname?.toLowerCase()} Dashboard
-                </h1>
+                        <FaStore className="me-2" /> {dmname?.toLowerCase()} Dashboard
+                    </h1>
                 </Col>
-                
-                <Col xs={6} className="text-end">
+
+                <Col xs={12} md={6} className="text-end">
                     <h5 className="mb-0 d-flex align-items-center justify-content-end">
-                    <span className=" me-2 live-indicator"></span>
+                        <span className=" me-2 live-indicator"></span>
                         <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>
-                         {/* Live indicator */}
+                        {/* Live indicator */}
                     </h5>
                 </Col>
             </Row>
@@ -100,7 +119,7 @@ const DMDashboard = ({ setStorename }) => {
                 <Col md={12} lg={12}>
                     <Form>
                         <Row>
-                            <Col md={5}>
+                            <Col md={4}>
                                 <Form.Group className="mb-3">
                                     <Form.Label className='fw-bolder text-success'>Start Date</Form.Label>
                                     <Form.Control
@@ -111,7 +130,7 @@ const DMDashboard = ({ setStorename }) => {
                                     />
                                 </Form.Group>
                             </Col>
-                            <Col md={5}>
+                            <Col md={4}>
                                 <Form.Group className="mb-3">
                                     <Form.Label className='fw-bolder text-success'>End Date</Form.Label>
                                     <Form.Control
@@ -122,7 +141,7 @@ const DMDashboard = ({ setStorename }) => {
                                     />
                                 </Form.Group>
                             </Col>
-                            <Col md={2} className="d-flex align-items-end mb-3">
+                            <Col md={4} className="d-flex align-items-end mb-3">
                                 <Button
                                     variant="pink"
                                     onClick={handleFilter}
@@ -137,7 +156,12 @@ const DMDashboard = ({ setStorename }) => {
                                 >
                                     <FaSyncAlt className="me-2" /> Reset
                                 </Button>
+                                <Button onClick={handleDownload} variant="pink" className="px-4 w-75 ms-3">
+                                    <IoMdDownload className='me-2' />
+                                    Download
+                                </Button>
                             </Col>
+
                         </Row>
                     </Form>
                 </Col>

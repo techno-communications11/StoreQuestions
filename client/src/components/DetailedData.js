@@ -291,17 +291,17 @@ const DetailedData = ({ storename }) => {
         <Card className="shadow-sm mb-4">
           <Card.Body>
 
-            <Row xs={12} className="d-flex align-items-center text-center mb-md-3 ">
+            <Row xs={12} className="d-flex align-items-start text-center mb-md-3 ">
               {/* Store Images Title */}
-              <Col xs={6} md={10}>
-                <h3 className="fw-bold mb-0" style={{ color: '#FF69B4' }}>
+              <Col xs={12} md={10}>
+                <h3 className=" text-start fw-bold mb-0" style={{ color: '#FF69B4' }}>
                   <BsImage className="me-2" />
                   Store Images - {storename}
                 </h3>
               </Col>
 
               {/* Today's Data with Live Indicator */}
-              <Col xs={6} md={2} className="text-end">
+              <Col xs={12} md={2} className="text-end text-xs-start mt-3 mt-md-0">
               <h5 className="mb-0 d-flex align-items-center justify-content-end">
                     <span className=" me-2 live-indicator"></span>
                         <span className="me-2 fw-bold text-danger"> Dafault Todays Data</span>

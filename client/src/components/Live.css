@@ -1,7 +1,7 @@
 .live-indicator {
     display: inline-block;
-    width: 10px;
-    height: 10px;
+    width: 15px;
+    height: 15px;
     background-color: red;
     border-radius: 50%;
     animation: blink 1s infinite;

@@ -54,7 +54,19 @@ const MarketDashboard = ({ setStorename }) => {
       url.searchParams.append('market', marketname);
       if (startDate) url.searchParams.append('startDate', startDate);
       if (endDate) url.searchParams.append('endDate', endDate);
-      console.log(marketname)
+      let array;
+
+      try {
+        array = JSON.parse(marketname).map(item => item.toLowerCase());
+      } catch (error) {
+        array = marketname.split(',').map(item => item.replace(/[\[\]"]+/g, '').toLowerCase());
+      }
+      
+      console.log(array);
+      
+      // console.log(typeof(marketname))
+      // console.log(typeof(array[0]),"fff")
+      // console.log(JSON.parse(marketname))
 
       // Fetch data
       const response = await fetch(url, {
@@ -72,7 +84,9 @@ const MarketDashboard = ({ setStorename }) => {
       if (data.success) {
         // Ensure data.data is an array before filtering
         console.log(data.data)
-        const filteredData = Array.isArray(data.data) ? data.data.filter(x => x.market === marketname) : [];
+        const filteredData = Array.isArray(data.data)
+        ? data.data.filter(x => array.includes(x.market.toLowerCase()))
+        : [];
         setMarketData(filteredData);
         console.log(filteredData, 'data')
       } else {
@@ -137,17 +151,21 @@ const MarketDashboard = ({ setStorename }) => {
     link.click();
     document.body.removeChild(link);
   };
+  // let array=;
+  // console.log(JSON.parse(marketData))  
 
   return (
     <Container fluid className="py-4 bg-light">
       {/* Dashboard Header */}
       <Row className="d-flex justify-content-between align-items-center mb-4">
   {/* Market Name and Dashboard Title */}
-  <Col xs={12} md={6} className="mb-2 mb-md-0 text-pink text-capitalize text-center text-md-start">
-  <h1>
-  <BarChart3 className="d-inline me-2" size={24} />
-  {marketname?.toLowerCase() || localStorage.getItem('marketname')?.toLowerCase()} Dashboard
-  </h1>
+  <Col  xs={12} 
+  md={6} 
+  className="mb-2 mb-md-0 text-pink text-capitalize text-center text-md-start">
+  <h5 className="text-wrap text-break">
+  <BarChart3 className="d-inline me-2" size={43} />
+  {marketname.split(',').map(item => item.replace(/[\[\]"]+/g, '').toLowerCase()+",") || localStorage.getItem('marketname')?.map(item => item.replace(/[\[\]"]+/g, '').toLowerCase())} Dashboard
+  </h5>
     
   </Col>
 

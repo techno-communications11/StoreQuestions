@@ -7,7 +7,7 @@ const handleCrediantalsFileUpload = (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No files were uploaded.' });
   }
-
+ console.log(req.file,"end point fetched")
   // Sanitize file name and define file path
   const sanitizedFileName = path.basename(req.file.originalname);
   const file1Path = path.join('uploads', sanitizedFileName);

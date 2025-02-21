@@ -12,30 +12,35 @@ function Crediantals() {
 
   function handleChange(event) {
     const selectedFile = event.target.files[0];
+    console.log("Selected File:", selectedFile); // Log the selected file
     setFile(selectedFile);
     setError('');
     setSuccess('');
   }
-
+  
   function handleSubmit(event) {
     event.preventDefault();
     setIsLoading(true);
     setError('');
     setSuccess('');
-
+  
     const url = `${process.env.REACT_APP_BASE_URL}/crediantalsFile`;
     const formData = new FormData();
     formData.append('file', file);
-
+  
+    console.log("FormData:", [...formData.entries()]); // Log the FormData contents
+  
     const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     };
-
+  
+    console.log("Request Config:", url, formData, config); // Log the request configuration
+  
     axios.post(url, formData, config)
       .then((response) => {
-        console.log(response.data);
+        console.log("Response:", response); // Log the response
         if (response.data.message) {
           setSuccess('File uploaded successfully!');
           setFile(null);
@@ -43,7 +48,7 @@ function Crediantals() {
         }
       })
       .catch(error => {
-        console.error('Error uploading file:', error);
+        console.error('Error uploading file:', error); // Log the error
         setError('Failed to upload file. Please try again.');
       })
       .finally(() => {

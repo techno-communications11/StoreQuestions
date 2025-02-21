@@ -42,8 +42,8 @@ router.get('/getstorewiseuploadcount', getstorewiseuploadcount);
 router.get('/questions', questions);
 router.put('/update-password',authenticateToken, resetpassword);
  router.post('/validatentid',validatentid)
-router.post('/crediantalsFile',  handleCrediantalsFileUpload);
-router.post('/marketstructureFile',  (req, res, next) => {
+ router.post('/crediantalsFile', upload.single('file'), handleCrediantalsFileUpload);
+ router.post('/marketstructureFile', upload.single('file'), (req, res, next) => {
   console.log('Uploaded file:', req.file); // Log file details
   next();
 }, handleMarketStructureFileUpload);

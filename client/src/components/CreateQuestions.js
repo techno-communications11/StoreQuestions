@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
-import { FaTrashAlt, FaPlusCircle } from "react-icons/fa";
+import { FaToggleOn, FaToggleOff, FaPlusCircle } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const CreateQuestions = () => {
@@ -50,6 +50,7 @@ const CreateQuestions = () => {
       type: questionType,
       checklistType: questionType === "Daily Question" ? dailyChecklistType : "",
       Question: questionText,
+      isEnabled: true, // Default to enabled
     };
 
     // Optimistically update the UI
@@ -94,15 +95,20 @@ const CreateQuestions = () => {
     }
   };
 
-  // Handle deleting a question
-  const handleDeleteQuestion = async (id) => {
+  // Handle toggling question status
+  const handleToggleQuestionStatus = async (id) => {
     try {
       if (!id) {
         throw new Error("Invalid question ID.");
       }
 
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/deleteQuestion/${id}`, {
+      const questionToToggle = questions.find((q) => q.id === id);
+      const newStatus = !questionToToggle.isEnabled;
+
+      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/toggleQuestionStatus/${id}`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isEnabled: newStatus }),
       });
 
       if (!response.ok) {
@@ -110,11 +116,16 @@ const CreateQuestions = () => {
         throw new Error(errorData.message || "An unexpected error occurred.");
       }
 
-      // Remove the deleted question from the state
-      setQuestions(questions.filter((question) => question.id !== id));
-      setAlertMessage({ type: "success", text: "Question deleted successfully!" });
+      // Update the question status in the state
+      setQuestions((prevQuestions) =>
+        prevQuestions.map((q) =>
+          q.id === id ? { ...q, isEnabled: newStatus } : q
+        )
+      );
+
+      setAlertMessage({ type: "success", text: `Question ${newStatus ? "enabled" : "disabled"} successfully!` });
     } catch (error) {
-      console.error("Error deleting question:", error);
+      console.error("Error toggling question status:", error);
       setAlertMessage({ type: "danger", text: error.message });
     }
   };
@@ -139,9 +150,8 @@ const CreateQuestions = () => {
           }}
         >
           <h1 className="fw-bolder display-1 display-md-3 display-sm-5">
-  Create Questions
-</h1>
-
+            Create Questions
+          </h1>
         </div>
       </motion.div>
 
@@ -243,13 +253,13 @@ const CreateQuestions = () => {
                 </Col>
                 <Col md={2} className="text-md-end">
                   <Button
-                    variant="danger"
-                     className="w-100 w-md-0 w-lg-0"
-                    onClick={() => handleDeleteQuestion(question.id)}
-                    aria-label={`Delete question: ${question.Question}`}
+                    variant={question.isEnabled ? "success" : "secondary"}
+                    className="w-100 w-md-0 w-lg-0"
+                    onClick={() => handleToggleQuestionStatus(question.id)}
+                    aria-label={`Toggle question status: ${question.Question}`}
                   >
-                    <FaTrashAlt className="me-2" />
-                    Delete
+                    {question.isEnabled ? <FaToggleOn className="me-2" /> : <FaToggleOff className="me-2" />}
+                    {question.isEnabled ? "Disable" : "Enable"}
                   </Button>
                 </Col>
               </Row>

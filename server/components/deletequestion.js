@@ -1,18 +1,18 @@
 import db from "../dbConnection/db.js";
 
-const deleteQuestion = (req, res) => {
-  const { id } = req.params;  // Getting id from request params (URL)
-  console.log(req.params,'data to delete')
+const toggleQuestionStatus = (req, res) => {
+  const { id } = req.params;
+  const { isEnabled } = req.body;
 
-  // Query to delete the question from the database by its id
-  const query = 'DELETE FROM questions WHERE id = ?';
-  const values = [id];
+  // Query to update the question status in the database
+  const query = 'UPDATE questions SET isEnabled = ? WHERE id = ?';
+  const values = [isEnabled, id];
 
   // Execute the query
   db.query(query, values, (err, result) => {
     if (err) {
-      console.error('Error deleting question from database:', err);
-      return res.status(500).json({ error: 'Failed to delete question. Please try again.' });
+      console.error('Error toggling question status:', err);
+      return res.status(500).json({ error: 'Failed to toggle question status. Please try again.' });
     }
 
     if (result.affectedRows === 0) {
@@ -22,10 +22,11 @@ const deleteQuestion = (req, res) => {
 
     // Respond with success message
     return res.status(200).json({
-      message: 'Question deleted successfully',
+      message: `Question ${isEnabled ? 'enabled' : 'disabled'} successfully`,
       id: id,
+      isEnabled: isEnabled,
     });
   });
 };
 
-export default deleteQuestion;
+export default toggleQuestionStatus;

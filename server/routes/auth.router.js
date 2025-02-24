@@ -34,7 +34,7 @@ router.get('/getmarkets', getmarkets);
 router.get('/getmarketwise', getMarketWiseStats);
 router.post('/uploadeddata', uploadeddata);
 router.post('/addQuestion', createquestion);
-router.post('/deleteQuestion/:id', deletequestion);
+router.post('/toggleQuestionStatus/:id', deletequestion);
 router.get('/getquestion', getQuestion);
 router.post('/getimagesdata', getImagesDataByStoreName);
 router.post('/imageverify', imageverify);

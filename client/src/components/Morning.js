@@ -219,7 +219,7 @@ const Morning = () => {
               </thead>
               <tbody>
                 {stores.length > 0 ? (
-                  stores.filter((store) => store.checklistType === 'Morning Question').map((store, index) => (
+                  stores.filter((store) => store.checklistType === 'Morning Question' && store.isEnabled===1).map((store, index) => (
                     <tr key={index}>
                       <td>{index + 1}</td>
                       <td>{store.question?.toLowerCase()}</td>

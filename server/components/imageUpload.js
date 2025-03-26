@@ -22,7 +22,7 @@ const imageUpload = async (req, res) => {
     }
 
     // Get storeaddress, ntid, and question from the request body
-    const { storeaddress, ntid, question,createdat } = req.body;
+    const { storeaddress, ntid, question,browserTime } = req.body;
     console.log(req.body, "data");
 
     if (!storeaddress || !ntid || !question) {
@@ -83,7 +83,7 @@ const imageUpload = async (req, res) => {
     VALUES (?, ?, ?, ?, ?)
 `;
 
-const [insertResult] = await db.promise().query(insertQuery, [storeaddress, imageUrlsJson, ntid, question_id,createdat]);
+const [insertResult] = await db.promise().query(insertQuery, [storeaddress, imageUrlsJson, ntid, question_id,browserTime]);
 
 
     if (insertResult.affectedRows === 1) {

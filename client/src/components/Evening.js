@@ -66,13 +66,22 @@ const Evening = () => {
       alert('No data found');
       return;
     }
+    // const now = new Date();
+    // const offset = -6 * 60; // CST is UTC-6
+    // const cstTime = new Date(now.getTime() + offset * 60 * 1000)
+    //   .toISOString()
+    //   .slice(0, 19) // Remove milliseconds
+    //   .replace("T", " "); 
     const now = new Date();
-    const offset = -6 * 60; // CST is UTC-6
-    const cstTime = new Date(now.getTime() + offset * 60 * 1000)
-      .toISOString()
-      .slice(0, 19) // Remove milliseconds
-      .replace("T", " "); 
-      
+    const browserTime = now.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(/(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+)/, '$3-$1-$2 $4:$5:$6');
     const formData = new FormData();
     selectedRowState.files.forEach((file) => {
       formData.append('files', file); // Append each file
@@ -80,7 +89,8 @@ const Evening = () => {
     formData.append('question', selectedStore);
     formData.append('ntid', ntid);
     formData.append('storeaddress', storename);
-    formData.append("createdat", cstTime);
+    formData.append('browserTime', browserTime);
+    // formData.append("createdat", cstTime);
 
 
     try {

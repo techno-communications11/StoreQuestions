@@ -1,0 +1,21 @@
+.hover-scale:hover {
+      transform: scale(1.2);
+      transition: transform 0.2s ease-in-out;
+    }
+    .text-pink {
+      color:#E10174;
+    }
+    .sticky-header th {
+      position: sticky;
+      top: 0;
+      background-color:#E10174;
+      color:white;
+      z-index: 1;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spinner-border {
+      animation: spin 1s linear infinite;
+    }

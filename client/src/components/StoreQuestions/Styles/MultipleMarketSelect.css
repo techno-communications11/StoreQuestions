@@ -1,0 +1,17 @@
+.custom-dropdown-menu {
+  padding: 0.5rem;
+}
+
+.custom-dropdown-menu .dropdown-item {
+  padding: 0.25rem 1rem;
+  transition: background-color 0.2s; /* Smooth transition for color change */
+}
+
+.custom-dropdown-menu .dropdown-item:hover {
+  background-color: 'gren'; /* Hover effect */
+}
+
+.custom-dropdown-menu .dropdown-item.active {
+  background-color: #e6f3ff !important; /* Ensure active style is applied */
+  color: #000; /* Keep text readable */
+}

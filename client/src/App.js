@@ -1,161 +1,64 @@
-import React, { useState, useEffect } from 'react';
+// App.js (minor tweak for clarity)
+import React from 'react';
 import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import { Login } from './components/Login';
-import { Register } from './components/Register';
+import Login from './components/Auth/Login';
+import { Register } from './components/Auth/Register';
 import PrivateRoute from './components/PrivateRoute';
-import MarketStructure from './components/MarketStructure';
-import Evening from './components/Evening';
-import UpdatePassword from './components/updatepassword';
-import UserHome from './components/UserHome';
-import Credentials from './components/Credentials';
-import ComplianceQuestions from './components/ComplianceQuestions';
-import AdminDashboard from './components/AdminDashboard';
-import StoreDashboard from './components/StoreDashbaord';
-import DetailedData from './components/DetailedData';
-import DMDashboard from './components/DMDashboard';
-import MarketDashboard from './components/MarketDashboard';
-import UploadedData from './components/UploadedData';
-import CreateQuestions from './components/CreateQuestions';
-import { jwtDecode } from 'jwt-decode';
-import MngEvg from './components/MngEng';
-import Morning from './components/Morning';
+import MarketStructure from './components/FileUploads/MarketStructure';
+import Evening from './components/Useruploads/Evening';
+import UpdatePassword from './components/Auth/updatepassword';
+import UserHome from './components/LandingPages/UserHome';
+import Credentials from './components/FileUploads/Credentials';
+import ComplianceQuestions from './components/Useruploads/ComplianceQuestions';
+import AdminDashboard from './components/Dashboards/AdminDashboard';
+import StoreDashboard from './components/AdminD/StoreDashbaord';
+import DetailedData from './components/Utils/DetailedData';
+import DMDashboard from './components/Dashboards/DMDashboard';
+import MarketDashboard from './components/Dashboards/MarketDashboard';
+// import UploadedData from './components/Utils/UploadedData';
+import CreateQuestions from './components/StoreQuestions/CreateQuestions';
+import MngEvg from './components/LandingPages/MngEng';
+import Morning from './components/Useruploads/Morning';
+import { UserProvider, useUserContext } from './components/Auth/UserContext';
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
-  const [role, setRole] = useState(null);
-  const [marketname, setMarketname] = useState('');
-  const [storename, setStorename] = useState('');
- 
- 
+const AppContent = () => {
+  const { userData, isAuthenticated, setUserData, setIsAuthenticated, ntidverify } = useUserContext();
 
- 
-
-  // Check authentication status on app load
-  useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('token');
-      // const isAuthenticatedFromStorage = localStorage.getItem('isAuthenticated');
-      const isVerifiedFromStorage = localStorage.getItem('isVerified');
-
-      if (token && typeof token === 'string') {
-        try {
-          const decodedToken = jwtDecode(token);
-          const currentTime = Date.now() / 1000;
-
-          if (decodedToken.exp > currentTime) {
-            setIsAuthenticated(true);
-            setRole(decodedToken.role); // Set role from token
-          } else {
-            handleLogout(); // Token expired
-          }
-        } catch (error) {
-          console.error('Token decode error:', error);
-          handleLogout(); // Invalid token
-        }
-      } else {
-        console.error('Invalid or missing token:', token);
-        handleLogout(); // Invalid token
-      }
-
-      if (isVerifiedFromStorage === 'true') {
-        setIsVerified(true);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  // Redirect to respective dashboard based on role
-  useEffect(() => {
-    if (isAuthenticated && role) {
-      switch (role) {
-        case 'admin':
-          if (window.location.pathname !== '/storedashboard') {
-            <Navigate to="/storedashboard" replace />;
-          }
-          break;
-        case 'district_manager':
-          if (window.location.pathname !== '/dmdashboard') {
-            <Navigate to="/dmdashboard" replace />;
-          }
-          break;
-        case 'market_manager':
-          if (window.location.pathname !== '/marketdashboard') {
-            <Navigate to="/marketdashboard" replace />;
-          }
-          break;
-        default:
-          if (window.location.pathname !== '/') {
-            <Navigate to="/" replace />;
-          }
-          break;
-      }
-    }
-  }, [isAuthenticated, role]);
-
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('isVerified');
-    setIsAuthenticated(false);
-    setIsVerified(false);
-    setRole(null);
-  };
-
-  // Handle login
-  const handleLogin = (token) => {
-    if (!token || typeof token !== 'string') {
-      console.error('Invalid token received:', token);
-      handleLogout();
-      return;
-    }
-
+  const handleLogout = async () => {
     try {
-      const decodedToken = jwtDecode(token);
-      setIsAuthenticated(true);
-      setRole(decodedToken.role); // Set role from token
-      localStorage.setItem('token', token);
-      localStorage.setItem('isAuthenticated', 'true');
-    } catch (error) {
-      console.error('Login error:', error);
-      handleLogout();
+      await fetch(`${process.env.REACT_APP_BASE_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('Logout error:', err);
     }
+    setUserData(null);
+    setIsAuthenticated(false);
   };
 
-  // Handle verification
-  const handleVerify = () => {
-    setIsVerified(true);
-    localStorage.setItem('isVerified', 'true');
+  const getDashboardRoute = (role) => {
+    switch (role) {
+      case 'admin':
+        return '/storedashboard';
+      case 'district_manager':
+        return '/dmdashboard';
+      case 'market_manager':
+        return '/marketdashboard';
+      default:
+        return '/';
+    }
   };
 
   return (
-    <BrowserRouter>
-      {/* Render Navbar only if authenticated */}
-      {isAuthenticated && <Navbar onLogout={handleLogout} role={role} />}
-
+    <>
+      {isAuthenticated && <Navbar onLogout={handleLogout} />}
       <Routes>
-        {/* Public routes */}
         <Route
           path="/login"
-          element={
-            isAuthenticated ? (
-              role === 'admin' ? (
-                <Navigate to="/storedashboard" replace />
-              ) : role === 'district_manager' ? (
-                <Navigate to="/dmdashboard" replace />
-              ) : role === 'market_manager' ? (
-                <Navigate to="/marketdashboard" replace />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            ) : (
-              <Login onLogin={handleLogin} />
-            )
-          }
+          element={isAuthenticated ? <Navigate to={getDashboardRoute(userData?.role)} replace /> : <Login />}
         />
         <Route
           path="/register"
@@ -165,31 +68,15 @@ function App() {
             </PrivateRoute>
           }
         />
-
-        {/* Protected routes */}
         <Route
           path="/"
-          element={
-            isAuthenticated ? (
-              role === 'admin' ? (
-                <Navigate to="/storedashboard" replace />
-              ) : role === 'district_manager' ? (
-                <Navigate to="/dmdashboard" replace />
-              ) : role === 'market_manager' ? (
-                <Navigate to="/marketdashboard" replace />
-              ) : (
-                <UserHome onverify={handleVerify} />
-              )
-            ) : (
-              <UserHome onverify={handleVerify} />
-            )
-          }
+          element={isAuthenticated ? <Navigate to={getDashboardRoute(userData?.role)} replace /> : <UserHome />}
         />
         <Route
           path="/admindashboard"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
-              <AdminDashboard setMarketname={setMarketname} />
+              <AdminDashboard />
             </PrivateRoute>
           }
         />
@@ -197,7 +84,7 @@ function App() {
           path="/dmdashboard"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
-              <DMDashboard setStorename={setStorename} />
+              <DMDashboard />
             </PrivateRoute>
           }
         />
@@ -205,23 +92,14 @@ function App() {
           path="/marketdashboard"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
-              <MarketDashboard setStorename={setStorename} />
+              <MarketDashboard />
             </PrivateRoute>
           }
         />
-        <Route
-          path="/mngevg"
-          element={<MngEvg onverify={handleVerify} />}
-        />
+        <Route path="/mngevg" element={<MngEvg />} />
         <Route
           path="/morning"
-          element={
-            isVerified || localStorage.getItem('isVerified') ? (
-              <Morning />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
+          element={ntidverify ? <Morning /> : <Navigate to="/mngevg" replace />}
         />
         <Route
           path="/createquestions"
@@ -231,19 +109,19 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/uploadeddata"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
               <UploadedData />
             </PrivateRoute>
           }
-        />
+        /> */}
         <Route
           path="/storedashboard"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
-              <StoreDashboard marketname={marketname} setStorename={setStorename} />
+              <StoreDashboard />
             </PrivateRoute>
           }
         />
@@ -251,7 +129,7 @@ function App() {
           path="/detaileddata"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
-              <DetailedData storename={storename} />
+              <DetailedData />
             </PrivateRoute>
           }
         />
@@ -265,23 +143,11 @@ function App() {
         />
         <Route
           path="/questions"
-          element={
-            isVerified || localStorage.getItem('isVerified') ? (
-              <Evening />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
+          element={ntidverify ? <Evening /> : <Navigate to="/mngevg" replace />}
         />
         <Route
           path="/compliancequestions"
-          element={
-            isVerified || localStorage.getItem('isVerified') ? (
-              <ComplianceQuestions />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
+          element={ntidverify ? <ComplianceQuestions /> : <Navigate to="/mngevg" replace />}
         />
         <Route
           path="/resetpassword"
@@ -300,7 +166,17 @@ function App() {
           }
         />
       </Routes>
-    </BrowserRouter>
+    </>
+  );
+};
+
+function App() {
+  return (
+    <UserProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </UserProvider>
   );
 }
 

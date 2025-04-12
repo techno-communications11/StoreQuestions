@@ -1,52 +1,73 @@
 import express from 'express';
-import login from '../components/login.js';  // Correct relative path with .js extension
-import register from '../components/register.js';  // Add .js extension
-import resetpassword from '../components/resetpassword.js';  // Add .js extension if needed
-import authenticateToken from '../components/authMiddleware.js';
-import  handleMarketStructureFileUpload from '../components/marketStructure.js';
-import  handleCrediantalsFileUpload  from '../components/crediantals.js';
-import stores from '../components/stores.js';
-import questions from '../components/questions.js';
-import {upload} from '../multer/multer.js'
+import login from '../components/Auth/login.js';  // Correct relative path with .js extension
+import register from '../components/Auth/register.js';  // Add .js extension
+import resetpassword from '../components/Auth/resetpassword.js';  // Add .js extension if needed
+
+import  handleMarketStructureFileUpload from '../components/SheetUploads/marketStructure.js';
+import  handleCrediantalsFileUpload  from '../components/SheetUploads/crediantals.js';
+import stores from '../components/Data/stores.js';
+import questions from '../components/Questions/questions.js';
+
+import {uploadImage} from '../multer/multer.js'
+import {uploadFile} from '../multer/multer.js'
  
-import validatentid from '../components/validatentid.js'
-import  imageUpload  from "../components/imageUpload.js";
- import getMarketWiseStats from '../components/getMarketWiseStats.js';
- import getstorewiseuploadcount from '../components/getstorewiseuploadcount.js';
- import getImagesDataByStoreName from '../components/getImagesDataByStorename.js';
- import getmarkets from '../components/getMarkets.js';
- import getDmStats from '../components/getDmStats.js';
- import imageverify from '../components/imageverify.js'
- import uploadeddata from '../components/uploadeddata.js';
- import createquestion from  '../components/createquestion.js'
- import getQuestion from '../components/getQuestion.js';
- import deletequestion from '../components/deletequestion.js'
- import getntid from '../components/getntid.js'
+import validatentid from '../components/Data/validatentid.js'
+import  imageUpload  from "../components/Images/imageUpload.js";
+ import getMarketWiseStats from '../components/Stats/getMarketWiseStats.js';
+ import getstorewiseuploadcount from '../components/Stats/getstorewiseuploadcount.js';
+ import getImagesDataByStoreName from '../components/Images/getImagesDataByStorename.js';
+ import getmarkets from '../components/Data/getMarkets.js';
+ import getDmStats from '../components/Stats/getDmStats.js';
+ import imageverify from '../components/Images/imageverify.js'
+ import uploadeddata from '../components/SheetUploads/uploadeddata.js';
+ import createquestion from  '../components/Questions/createquestion.js'
+ import getQuestion from '../components/Questions/getQuestion.js';
+ import deletequestion from '../components/Questions/deletequestion.js'
+ import getntid from '../components/Data/getntid.js'
+ import authenticateToken from '../Middleware/authMiddleware.js';
+ import getUser from '../components/Auth/Getuser.js';
 
 const router = express.Router();
 
 router.post('/login', login);
-router.post('/register', register);
+router.get('/user/me', authenticateToken, getUser);
+router.post('/register', authenticateToken, register);
+
+
+
+router.get('/getdmstats',authenticateToken, getDmStats);
+router.get('/getmarkets', authenticateToken,getmarkets);
+router.get('/getmarketwise', authenticateToken, getMarketWiseStats);
+router.post('/uploadeddata',  authenticateToken, uploadeddata);
+router.post('/addQuestion',authenticateToken, createquestion);
+router.post('/toggleQuestionStatus/:id', authenticateToken, deletequestion);
+router.get('/getquestion', authenticateToken, getQuestion);
+router.post('/getimagesdata', authenticateToken,getImagesDataByStoreName);
+router.post('/imageverify',authenticateToken, imageverify);
+router.get('/getstorewiseuploadcount',authenticateToken, getstorewiseuploadcount);
+
+router.put('/update-password',authenticateToken, resetpassword);
+ 
+ router.post('/crediantalsFile', uploadFile.single('file'), handleCrediantalsFileUpload);
+ router.post('/marketstructureFile', uploadFile.single('file'), handleMarketStructureFileUpload);
+
+
+//logout
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+});
+
+
+//no need authentication only for image upload and need ntid verification
+router.post("/uploadbulkimages", uploadImage.array('files', 100), imageUpload);
+router.post('/validatentid',validatentid)
+router.get('/questions',questions);
 router.get('/stores', stores);
 router.get('/getntid', getntid);
-router.get('/getdmstats', getDmStats);
-router.get('/getmarkets', getmarkets);
-router.get('/getmarketwise', getMarketWiseStats);
-router.post('/uploadeddata', uploadeddata);
-router.post('/addQuestion', createquestion);
-router.post('/toggleQuestionStatus/:id', deletequestion);
-router.get('/getquestion', getQuestion);
-router.post('/getimagesdata', getImagesDataByStoreName);
-router.post('/imageverify', imageverify);
-router.get('/getstorewiseuploadcount', getstorewiseuploadcount);
-router.get('/questions', questions);
-router.put('/update-password',authenticateToken, resetpassword);
- router.post('/validatentid',validatentid)
- router.post('/crediantalsFile', upload.single('file'), handleCrediantalsFileUpload);
- router.post('/marketstructureFile', upload.single('file'), (req, res, next) => {
-  console.log('Uploaded file:', req.file); // Log file details
-  next();
-}, handleMarketStructureFileUpload);
-router.post("/uploadimage", upload.array('files', 5), imageUpload);
-
 export default router;

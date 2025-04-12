@@ -1,28 +1,17 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Used for decoding the token
+import { useUserContext } from "../components/Auth/UserContext"; // Correct import
 
 const Navbar = ({ onLogout }) => {
-  const [isOpen, setIsOpen] = useState(false); // State for navbar collapse
+  const [isOpen, setIsOpen] = useState(false);
+  const { userData } = useUserContext(); // Use context hook
+  const userRole = userData?.role; // Get role from context
 
   const handleLogout = () => {
-    onLogout(); // Call the onLogout function passed as prop
-    setIsOpen(false); // Close the navbar after logout
+    onLogout();
+    setIsOpen(false);
   };
 
-  const token = localStorage.getItem("token"); // Get token from local storage
-  let role = ""; // Set role empty
-
-  if (token) {
-    try {
-      const decodedToken = jwtDecode(token); // Decode the token
-      role = decodedToken.role; // Set role from the decoded token
-    } catch (error) {
-      console.error("Invalid token:", error); // Handle token decoding errors
-    }
-  }
-
-  // Function to close the navbar
   const closeNavbar = () => {
     setIsOpen(false);
   };
@@ -34,16 +23,8 @@ const Navbar = ({ onLogout }) => {
           <img src="logo.webp" height={40} alt="Logo" />
           <Link
             className="navbar-brand fw-bold fs-6"
-            to={
-              role === "admin"
-                ? "/storedashboard"
-                : role === "district_manager"
-                ? "/dmdashboard"
-                : role === "market_manager"
-                ? "/marketdashboard"
-                : null
-            }
-            onClick={closeNavbar} // Close navbar when logo is clicked
+            to={getDashboardRoute(userRole)}
+            onClick={closeNavbar}
           >
             Techno Communications LLC
           </Link>
@@ -52,7 +33,7 @@ const Navbar = ({ onLogout }) => {
         <button
           className="navbar-toggler"
           type="button"
-          onClick={() => setIsOpen(!isOpen)} // Toggle navbar collapse
+          onClick={() => setIsOpen(!isOpen)}
           aria-controls="navbarNav"
           aria-expanded={isOpen}
           aria-label="Toggle navigation"
@@ -61,29 +42,29 @@ const Navbar = ({ onLogout }) => {
         </button>
 
         <div
-          className={`collapse navbar-collapse ${isOpen ? "show" : ""}`} // Conditional rendering for collapse
+          className={`collapse navbar-collapse ${isOpen ? "show" : ""}`}
           id="navbarNav"
         >
           <ul className="navbar-nav ms-auto">
-            {/* {role === "user" && (
+            {/* {userRole === "user" && (
               <li className="nav-item">
                 <Link
                   className="nav-link fw-medium"
                   to="/uploadeddata"
-                  onClick={closeNavbar} // Close navbar when link is clicked
+                  onClick={closeNavbar}
                 >
                   Uploaded Data
                 </Link>
               </li>
             )} */}
 
-            {role === "admin" && (
+            {userRole === "admin" && (
               <>
                 <li className="nav-item">
                   <Link
                     className="nav-link fw-medium"
                     to="/createquestions"
-                    onClick={closeNavbar} // Close navbar when link is clicked
+                    onClick={closeNavbar}
                   >
                     Questions
                   </Link>
@@ -92,7 +73,7 @@ const Navbar = ({ onLogout }) => {
                   <Link
                     className="nav-link fw-medium"
                     to="/msupload"
-                    onClick={closeNavbar} // Close navbar when link is clicked
+                    onClick={closeNavbar}
                   >
                     Market Structure
                   </Link>
@@ -101,7 +82,7 @@ const Navbar = ({ onLogout }) => {
                   <Link
                     className="nav-link fw-medium"
                     to="/credentials"
-                    onClick={closeNavbar} // Close navbar when link is clicked
+                    onClick={closeNavbar}
                   >
                     Credentials
                   </Link>
@@ -110,7 +91,7 @@ const Navbar = ({ onLogout }) => {
                   <Link
                     className="nav-link fw-medium"
                     to="/resetpassword"
-                    onClick={closeNavbar} // Close navbar when link is clicked
+                    onClick={closeNavbar}
                   >
                     Reset Password
                   </Link>
@@ -119,7 +100,7 @@ const Navbar = ({ onLogout }) => {
                   <Link
                     className="nav-link fw-medium"
                     to="/register"
-                    onClick={closeNavbar} // Close navbar when link is clicked
+                    onClick={closeNavbar}
                   >
                     Register
                   </Link>
@@ -127,10 +108,33 @@ const Navbar = ({ onLogout }) => {
               </>
             )}
 
+            {/* {(userRole === "district_manager" || userRole === "market_manager") && (
+              <>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link fw-medium"
+                    to={`/${userRole.split('_')[0]}dashboard`}
+                    onClick={closeNavbar}
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    className="nav-link fw-medium"
+                    to="/uploadeddata"
+                    onClick={closeNavbar}
+                  >
+                    Uploaded Data
+                  </Link>
+                </li>
+              </>
+            )} */}
+
             <li className="nav-item mt-2 mt-lg-0 mt-md-0">
               <button
                 className="btn btn-danger btn-small w-100"
-                onClick={handleLogout} // Logout and close navbar
+                onClick={handleLogout}
               >
                 Logout
               </button>
@@ -140,6 +144,20 @@ const Navbar = ({ onLogout }) => {
       </div>
     </nav>
   );
+};
+
+// Helper function for dashboard routes
+const getDashboardRoute = (role) => {
+  switch (role) {
+    case "admin":
+      return "/storedashboard";
+    case "district_manager":
+      return "/dmdashboard";
+    case "market_manager":
+      return "/marketdashboard";
+    default:
+      return "/";
+  }
 };
 
 export default Navbar;

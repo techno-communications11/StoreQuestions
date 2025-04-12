@@ -1,22 +1,54 @@
-import multer from 'multer'; // imports multer which is used for handling file uploads in node js
-import fs from 'fs'; // fs is the file syatem whisch is used to check uploads file exist or not its mainly used  when working with files
+// multerConfig.js
+import multer from 'multer';
+import fs from 'fs';
 
-// Check if the uploads directory exists, if not, create it
-if (!fs.existsSync('uploads')) { // if the uploads folder  not exitsts returns  false else true
-  fs.mkdirSync('uploads'); // this will create the uploads folder
+
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads', { recursive: true });
 }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({ //configures Multer to store files on the server’s disk
-  destination: (req, file, cb) => { //cb callback function
-    cb(null, 'uploads/'); //tells multer to store files in uploads
+// Configure different storage strategies
+const memoryStorage = multer.memoryStorage(); // For image uploads (buffers)
+const diskStorage = multer.diskStorage({      // For CSV file uploads (disk)
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname); // Use original file name
-  },
+    cb(null, file.originalname);
+  }
 });
 
-const upload = multer({ storage }); //This initializes Multer with the disk storage configuration (storage)
-//upload is now a middleware that you can use in your routes
+// Custom file filter
+const fileFilter = (req, file, cb) => {
+  // Allow images and CSV files
+  if (
+    file.mimetype.startsWith('image/') || 
+    file.mimetype === 'text/csv' ||
+    file.mimetype === 'application/vnd.ms-excel'
+  ) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image and CSV files are allowed!'), false);
+  }
+};
 
-export { upload }; // ✅ Correct ES Module export
+// Create different upload middleware instances
+const uploadImage = multer({
+  storage: memoryStorage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 10 // Maximum 10 files
+  }
+});
+
+const uploadFile = multer({
+  storage: diskStorage,
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit for CSV files
+  }
+});
+
+export { uploadImage, uploadFile };

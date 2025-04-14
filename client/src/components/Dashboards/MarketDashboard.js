@@ -96,7 +96,7 @@ const MarketDashboard = () => {
   }, [marketname]);
 
   const handleStore = (storename) => {
-    localStorage.setItem('storename', storename);
+    localStorage.setItem('storename', btoa(storename));
     setStorename(storename);
     navigate('/detaileddata');
   };

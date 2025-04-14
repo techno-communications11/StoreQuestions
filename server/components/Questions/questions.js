@@ -1,7 +1,7 @@
 import db from '../../dbConnection/db.js';  // Import the connection pool
 
 const questions = (req, res) => {
-    const query = 'SELECT question,type,checklistType,isEnabled FROM questions';
+    const query = 'SELECT question,type,checklistType,isEnabled,selectedMarkets FROM questions';
 
     // Execute the query using the connection pool
     db.query(query, (err, rows) => {
@@ -14,7 +14,7 @@ const questions = (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({ message: 'No stores found.' });
         }
-
+ console.log(rows);
         // Send the rows as the response
         res.status(200).json(rows);
     }); 

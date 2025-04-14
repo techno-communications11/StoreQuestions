@@ -5,7 +5,17 @@ const StoreSelector = ({ stores, searchTerm, setSearchTerm, onSelect, disabled }
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const filteredStores = stores.filter(store =>
+  // Remove duplicate stores by address
+  const uniqueStores = stores.reduce((acc, current) => {
+    const exists = acc.some(store => store.storeaddress === current.storeaddress);
+    if (!exists) {
+      acc.push(current);
+    }
+    return acc;
+  }, []);
+
+  // Filter unique stores based on search term
+  const filteredStores = uniqueStores.filter(store =>
     store.storeaddress.toLowerCase().includes(searchTerm.toLowerCase())
   );
 

@@ -28,10 +28,12 @@ const Checklist = ({ title, filterCondition }) => {
         }
       );
 
+      console.log(items,"questions to display")
       if (response.status !== 200) {
         throw new Error("Failed to fetch items");
       } else {
         const data = await response.json();
+         console.log(data)
         setItems(data);
         const initialState = data.reduce((acc, item) => {
           acc[item.question] = {
@@ -120,8 +122,8 @@ const Checklist = ({ title, filterCondition }) => {
     });
 
     // Add metadata
-    formData.append("ntid", localStorage.getItem("ntid"));
-    formData.append("storeaddress", localStorage.getItem("selectedstore"));
+    formData.append("ntid", atob(localStorage.getItem("ntid")));
+    formData.append("storeaddress", atob(localStorage.getItem("selectedstore")));
     formData.append("browserTime", new Date().toISOString());
 
     // Add questions as comma-separated string

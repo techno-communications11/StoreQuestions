@@ -3,7 +3,7 @@ import db from '../../dbConnection/db.js'; // Import the connection pool
 const stores = async (req, res) => {
     try {
         const query = `
-            SELECT ms.storename, ms.storeaddress, cs.ntid 
+            SELECT ms.storename, ms.storeaddress,ms.market, cs.ntid 
             FROM marketstructure AS ms 
             LEFT JOIN credentials AS cs 
             ON cs.doorcode = ms.doorcode
@@ -11,6 +11,7 @@ const stores = async (req, res) => {
 
         // Execute the query using the connection pool
         const [rows] = await db.promise().query(query);
+         console.log(rows)
 
         // Check if any rows were returned
         if (rows.length === 0) {

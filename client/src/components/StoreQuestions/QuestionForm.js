@@ -41,7 +41,7 @@ const QuestionForm = ({
       type: questionType,
       checklistType: questionType === "Daily Question" ? dailyChecklistType : "",
       Question: questionText,
-      selectedMarkets: selectedMarkets,
+      selectedMarkets: JSON.stringify(selectedMarkets), // Stringify the array
       isEnabled: true,
     };
 

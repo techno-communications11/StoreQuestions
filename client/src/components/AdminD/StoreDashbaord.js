@@ -50,7 +50,7 @@ const StoreDashboard = ({ marketName }) => { // Remove setStorename prop
     setError(null);
 
     try {
-      const currentMarket = marketName || localStorage.getItem('marketName');
+      const currentMarket = marketName || atob(localStorage.getItem('marketName'));
       const url = new URL(`${process.env.REACT_APP_BASE_URL}/getstorewiseuploadcount`);
 
       const params = new URLSearchParams({
@@ -105,7 +105,7 @@ const StoreDashboard = ({ marketName }) => { // Remove setStorename prop
 
   // Navigate to detailed view
   const handleStoreSelection = (storeName) => {
-    localStorage.setItem('storeName', storeName); // Keep for backward compatibility
+    localStorage.setItem('storeName',btoa(storeName) ); // Keep for backward compatibility
     setStorename(storeName); // Use context setter
     navigate('/detaileddata');
   };

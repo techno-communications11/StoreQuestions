@@ -1,16 +1,16 @@
 const fetchStores = async () => {
     try {
-        console.log('Fetching from:', `${process.env.REACT_APP_BASE_URL}/stores`); // Log URL
+        // console.log('Fetching from:', `${process.env.REACT_APP_BASE_URL}/stores`); // Log URL
         const response = await fetch(`${process.env.REACT_APP_BASE_URL}/stores`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             
         });
 
-         console.log(response.data)
+         console.log(response.data,"ddddddddddddd")
 
-        console.log('Response status:', response.status); // Log status code
-        console.log('Response OK:', response.ok); // Log if response is OK
+        // console.log('Response status:', response.status); // Log status code
+        // console.log('Response OK:', response.ok); // Log if response is OK
 
         if (!response.ok) {
             const errorText = await response.text(); // Get raw response body for non-200 statuses

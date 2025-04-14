@@ -8,6 +8,7 @@ export const UserProvider = ({ children }) => {
   const [storename, setStorename] = useState(null);
   const [ntidverify, setNtidverify] = useState(false);
   const [loading, setLoading] = useState(true); // Add loading state
+  const [ntid,setNtid]=useState(null);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -73,6 +74,8 @@ export const UserProvider = ({ children }) => {
         setStorename,
         ntidverify,
         setNtidverify,
+        ntid,
+        setNtid
       }}
     >
       {children}

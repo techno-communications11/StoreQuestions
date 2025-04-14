@@ -21,11 +21,14 @@ const DetailedData = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const { storename, userData } = useUserContext();
-  const name = userData?.name || localStorage.getItem("name") || "Unknown User";
+  let { storename, userData } = useUserContext();
+  const name = userData?.name || atob(localStorage.getItem("name")) || "Unknown User";
+
 
   const fetchImagesData = async () => {
+    storename=atob(localStorage.getItem('storeName'));
     if (!storename) {
+       
       setError("Store name not found");
       return;
     }
@@ -55,6 +58,7 @@ const DetailedData = () => {
 
   useEffect(() => {
     fetchImagesData();
+    localStorage.setItem("storeName",btoa(storename));
   }, [storename]);
 
   const handleImageAcceptAll = async (status) => {
@@ -165,6 +169,7 @@ const DetailedData = () => {
 
   return (
     <Container fluid className="py-4 bg-light">
+      {imageverified&&alert("image verified")}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

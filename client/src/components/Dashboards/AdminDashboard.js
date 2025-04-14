@@ -53,7 +53,7 @@ const AdminDashboard = ({ setMarketname }) => {
   }, []);
 
   const handleClick = (market) => {
-    localStorage.setItem("marketname", market);
+    localStorage.setItem("marketname", btoa(market));
     setMarketname(market);
     navigate("/storedashboard");
   };

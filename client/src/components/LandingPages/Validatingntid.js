@@ -2,8 +2,10 @@
 
 const validatingNtid= async (selectedStore,ntid) => { //function taking ntid as parameter and uses async await to handle asynchronous perations
   // console.log(ntid,'got ntid')
-  localStorage.setItem('ntid',ntid);
-  localStorage.setItem('selectedstore',selectedStore)
+ // Encoding to Base64 before storing
+localStorage.setItem('ntid', btoa(ntid));
+localStorage.setItem('selectedstore', btoa(selectedStore));
+
    if(!selectedStore||!ntid){
     return;
    }

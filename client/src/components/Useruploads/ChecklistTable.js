@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaUpload, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
 import fetchStores from '../Utils/fetchStores';
+import { useParams } from 'react-router-dom';
 
 const ChecklistTable = ({
   items,
@@ -10,7 +11,8 @@ const ChecklistTable = ({
   bulkUploadMode,
 }) => {
   const [filteredItems, setFilteredItems] = useState([]);
-  const storeAddress = atob(localStorage.getItem('selectedstore') || '') || '';
+   const {selectedstore}=useParams();
+  const storeAddress = selectedstore || '';
   console.log(storeAddress, 'stradd');
 
   useEffect(() => {
@@ -185,7 +187,7 @@ const ChecklistTable = ({
         ) : (
           <tr>
             <td colSpan={bulkUploadMode ? 6 : 5} className="text-center">
-              No items found for selected market
+            <div class="spinner-border p-3"></div>
             </td>
           </tr>
         )}

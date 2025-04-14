@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import { IoMdDownload } from "react-icons/io";
 import { useUserContext } from '../Auth/UserContext';
 
+
 const DMDashboard = () => {
     const [marketData, setMarketData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ const DMDashboard = () => {
     const [endDate, setEndDate] = useState('');
     const navigate = useNavigate();
 
-     const { userData,setStorename } = useUserContext(); 
+     const { userData } = useUserContext(); 
    
  const dmname=userData.name;
 
@@ -53,9 +54,9 @@ const DMDashboard = () => {
     }, [dmname]);
 
     const handleStore = (storename) => {
-        localStorage.setItem('storename', btoa(storename));
-        setStorename(storename);
-        navigate('/detaileddata');
+
+
+        navigate(`/detaileddata/${storename}`);
     };
 
     const handleFilter = () => {

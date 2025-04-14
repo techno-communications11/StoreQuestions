@@ -74,9 +74,9 @@ const MngEvg = () => {
         setIsVerifying(false);
         setTimeout(() => {
           if (modalContent === 'Morning Check List') {
-            navigate('/morning');
+            navigate(`/morning/${selectedStore}/${ntid}`);
           } else {
-            navigate('/questions');
+            navigate(`/questions/${selectedStore}/${ntid}`);
           }
         }, 2000);
       }, 1000);

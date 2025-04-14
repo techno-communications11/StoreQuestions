@@ -8,10 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import { Card, Row, Spinner, Col, Button } from 'react-bootstrap';
 import * as XLSX from 'xlsx';
 import { IoMdDownload } from 'react-icons/io';
-import { useUserContext } from '../Auth/UserContext'; // Import context
+// import { useUserContext } from '../Auth/UserContext'; // Import context
 
-const StoreDashboard = ({ marketName }) => { // Remove setStorename prop
-  const { setStorename } = useUserContext(); // Get setStorename from context
+const StoreDashboard = ({ marketName }) => {
+
   const [marketData, setMarketData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -105,9 +105,8 @@ const StoreDashboard = ({ marketName }) => { // Remove setStorename prop
 
   // Navigate to detailed view
   const handleStoreSelection = (storeName) => {
-    localStorage.setItem('storeName',btoa(storeName) ); // Keep for backward compatibility
-    setStorename(storeName); // Use context setter
-    navigate('/detaileddata');
+ 
+    navigate(`/detaileddata/${storeName}`);
   };
 
   const handleDownload = () => {

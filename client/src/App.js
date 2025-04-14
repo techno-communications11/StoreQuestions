@@ -98,7 +98,7 @@ const AppContent = () => {
         />
         <Route path="/mngevg" element={<MngEvg />} />
         <Route
-          path="/morning"
+          path="/morning/:selectedstore/:ntid"
           element={ntidverify ? <Morning /> : <Navigate to="/mngevg" replace />}
         />
         <Route
@@ -126,7 +126,7 @@ const AppContent = () => {
           }
         />
         <Route
-          path="/detaileddata"
+          path="/detaileddata/:storename"
           element={
             <PrivateRoute isAuthenticated={isAuthenticated}>
               <DetailedData />
@@ -142,11 +142,11 @@ const AppContent = () => {
           }
         />
         <Route
-          path="/questions"
+          path="/questions/:selectedstore/:ntid"
           element={ntidverify ? <Evening /> : <Navigate to="/mngevg" replace />}
         />
         <Route
-          path="/compliancequestions"
+          path="/compliancequestions/:selectedstore/:ntid"
           element={ntidverify ? <ComplianceQuestions /> : <Navigate to="/mngevg" replace />}
         />
         <Route

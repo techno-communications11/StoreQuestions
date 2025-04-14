@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import useMarkets from '../Utils/useMarkets ';
+import React, { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import useMarkets from "../Utils/useMarkets ";
 import Lottie from "lottie-react";
 import Animation from "./RegisterAnimation.json";
-import { Col } from 'react-bootstrap';
+import { Col } from "react-bootstrap";
 const Register = () => {
   const [userData, setUserData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'user',
-    districtManagerName: '',  // Added for district manager role
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "user",
+    districtManagerName: "", // Added for district manager role
   });
 
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { markets, loading, errormarket } = useMarkets();
 
@@ -29,56 +29,63 @@ const Register = () => {
     e.preventDefault();
 
     if (userData.password !== userData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     try {
-      console.log(userData)
-      const response = await fetch(`${process.env.REACT_APP_BASE_URL}/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-        credentials:'include'
-      });
+      console.log(userData);
+      const response = await fetch(
+        `${process.env.REACT_APP_BASE_URL}/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(userData),
+          credentials: "include",
+        }
+      );
       const data = await response.json();
 
       if (response.status === 201) {
-        setSuccess('Registration successful! Please login.');
-        setTimeout(() => setSuccess(''), 3000);
-        setError('');
+        setSuccess("Registration successful! Please login.");
+        setTimeout(() => setSuccess(""), 3000);
+        setError("");
         setUserData({
-          email: '',
-          password: '',
-          confirmPassword: '',
-          role: 'user',
-          districtManagerName: '',
+          email: "",
+          password: "",
+          confirmPassword: "",
+          role: "user",
+          districtManagerName: "",
         });
       } else {
-        setError(data.message || 'Registration failed');
+        setError(data.message || "Registration failed");
       }
     } catch (err) {
-      setError('Registration failed. Please try again.');
+      setError("Registration failed. Please try again.");
     }
   };
- if(loading){
+  if (loading) {
+    return (
+      <div class="d-flex justify-content-center align-items-center vh-100">
+        <div class="spinner-border p-5"></div>
+      </div>
+    );
+  }
 
-  return (
-    <div class="d-flex justify-content-center align-items-center vh-100">
-          <div class="spinner-border p-5"></div>
-        </div>
-  )
- }
-  
   if (errormarket) return <p>Error: {errormarket}</p>;
 
   return (
     <div className="d-flex flex-column justify-content-center align-items-center">
-      {success && <div className="alert alert-success alert-dismissible mt-5"><strong>{success}</strong></div>}
+      {success && (
+        <div className="alert alert-success alert-dismissible mt-5">
+          <strong>{success}</strong>
+        </div>
+      )}
 
-      <div className="ms-2 rounded me-2 mb-1"
+      <div
+        className="ms-2 rounded me-2 mb-1"
         style={{
           backgroundImage: "url(/register.jpg)",
           backgroundSize: "cover",
@@ -89,18 +96,17 @@ const Register = () => {
           opacity: "0.9",
         }}
       >
-        <h4 className="text-white mb-1 fs-1 text-center pt-5">
-          Register User
-        </h4>
+        <h4 className="text-white mb-1 fs-1 text-center pt-5">Register User</h4>
       </div>
 
       <div className="container-fluid d-flex gap-5 justify-content-around align-items-center">
-        <div className="row w-100 justify-content-center p-0 p-md-5 p-lg-5"
+        <div
+          className="row w-100 justify-content-center p-0 p-md-5 p-lg-5"
           style={{
-            background: "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
+            background:
+              "linear-gradient(135deg,rgb(229, 237, 248) 0%,rgba(213, 245, 246, 0.32) 50%,rgba(248, 223, 241, 0.83) 100%)",
           }}
         >
-
           <div className="col-lg-3 me-5 col-md-3 mb-4 d-flex justify-content-center align-items-center">
             <Lottie
               className="mb-3"
@@ -110,10 +116,12 @@ const Register = () => {
               style={{ height: "100%", width: "100%" }}
             />
           </div>
-          <Col className='col-md-5 col-sm-12 col-lg-5'>
-            <div className="card shadow-lg border-0 rounded-lg"    xs={12} // Full width on extra small screens
-            md={8}// 1/3 width on medium screens
-            lg={8}//1/3 width on large screens
+          <Col className="col-md-5 col-sm-12 col-lg-5">
+            <div
+              className="card shadow-lg border-0 rounded-lg"
+              xs={12} // Full width on extra small screens
+              md={8} // 1/3 width on medium screens
+              lg={8} //1/3 width on large screens
             >
               <div className="card-body">
                 {error && <div className="alert alert-danger">{error}</div>}
@@ -150,21 +158,21 @@ const Register = () => {
                   </div>
 
                   {/* Additional input if role is district manager */}
-                
-                      <div className="mb-3">
-                        <input
-                          type="text"
-                          className="form-control shadow-none border"
-                          id="districtManagerName"
-                          name="districtManagerName"
-                          value={userData.districtManagerName}
-                          onChange={handleChange}
-                          placeholder="Enter Name"
-                          required
-                        />
-                      </div>
 
-                  {userData.role === 'market_manager' && (
+                  <div className="mb-3">
+                    <input
+                      type="text"
+                      className="form-control shadow-none border"
+                      id="districtManagerName"
+                      name="districtManagerName"
+                      value={userData.districtManagerName}
+                      onChange={handleChange}
+                      placeholder="Enter Name"
+                      required
+                    />
+                  </div>
+
+                  {userData.role === "market_manager" && (
                     <div className="mb-3">
                       <select
                         className="form-select shadow-none border"
@@ -187,7 +195,7 @@ const Register = () => {
                   <div className="mb-3">
                     <div className="input-group">
                       <input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showPassword ? "text" : "password"}
                         className="form-control shadow-none border"
                         id="password"
                         name="password"
@@ -208,7 +216,7 @@ const Register = () => {
 
                   <div className="mb-3">
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       className="form-control shadow-none border"
                       id="confirmPassword"
                       name="confirmPassword"
@@ -219,13 +227,16 @@ const Register = () => {
                     />
                   </div>
 
-                  <button type="submit" className="btn btn-primary w-100 text-white mt-2">
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-100 text-white mt-2"
+                  >
                     Register
                   </button>
                 </form>
               </div>
             </div>
-            </Col>
+          </Col>
         </div>
       </div>
     </div>

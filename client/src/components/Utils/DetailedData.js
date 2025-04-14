@@ -9,6 +9,7 @@ import ImageGalleryModal from "./ImageGalleryModal";
 import DateFilter from "./DateFilter";
 import ActionButtons from "./ActionButtons";
 import "./Styles/Live.css";
+import { useParams } from 'react-router-dom';
 
 const DetailedData = () => {
   const [imagesData, setImagesData] = useState([]);
@@ -20,13 +21,13 @@ const DetailedData = () => {
   const [showAllGallery, setShowAllGallery] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  let { storename, userData } = useUserContext();
-  const name = userData?.name || atob(localStorage.getItem("name")) || "Unknown User";
+  const { storename } = useParams();
+  let {  userData } = useUserContext();
+  const name = userData?.name ;
 
 
   const fetchImagesData = async () => {
-    storename=atob(localStorage.getItem('storeName'));
+  
     if (!storename) {
        
       setError("Store name not found");
@@ -58,7 +59,7 @@ const DetailedData = () => {
 
   useEffect(() => {
     fetchImagesData();
-    localStorage.setItem("storeName",btoa(storename));
+ 
   }, [storename]);
 
   const handleImageAcceptAll = async (status) => {

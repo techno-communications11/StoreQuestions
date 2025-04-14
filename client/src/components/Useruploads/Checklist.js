@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa";
 import ChecklistItem from "./ChecklistItem";
 import ChecklistTable from "./ChecklistTable";
+import { useParams } from "react-router-dom";
 
 const Checklist = ({ title, filterCondition }) => {
   const [items, setItems] = useState([]);
@@ -18,6 +19,7 @@ const Checklist = ({ title, filterCondition }) => {
   const [bulkUploadMode, setBulkUploadMode] = useState(false);
   const fileInputRef = useRef(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+   const{selectedstore,ntid}=useParams();
 
   const getItems = async () => {
     try {
@@ -122,8 +124,8 @@ const Checklist = ({ title, filterCondition }) => {
     });
 
     // Add metadata
-    formData.append("ntid", atob(localStorage.getItem("ntid")));
-    formData.append("storeaddress", atob(localStorage.getItem("selectedstore")));
+    formData.append("ntid", ntid);
+    formData.append("storeaddress", selectedstore);
     formData.append("browserTime", new Date().toISOString());
 
     // Add questions as comma-separated string

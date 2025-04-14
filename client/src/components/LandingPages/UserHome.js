@@ -68,9 +68,9 @@ const UserHome = () => {
         setIsVerifying(false);
         setTimeout(() => {
           if (modalContent === 'Daily Checklist') {
-            navigate('/mngevg');
+            navigate(`/mngevg`);
           } else {
-            navigate('/compliancequestions');
+            navigate(`/compliancequestions/${selectedStore}/${ntid}`);
           }
         }, 2000);
       }, 1000);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUserContext } from '../Auth/UserContext'; // Adjust import path
 import {
   Table,
@@ -36,9 +36,9 @@ const MarketDashboard = () => {
   const [selectedStores, setSelectedStores] = useState([]);
   const navigate = useNavigate();
 
-  const { userData,setStorename } = useUserContext();
+  const { userData } = useUserContext();
   const marketname = userData?.market; // e.g., ['SAN DIEGO']
-  console.log(marketname,'mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
+  // console.log(marketname,'mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm')
 
   const fetchMarketData = async (startDate = '', endDate = '') => {
     if (!marketname || !Array.isArray(marketname) || marketname.length === 0) {
@@ -96,9 +96,8 @@ const MarketDashboard = () => {
   }, [marketname]);
 
   const handleStore = (storename) => {
-    localStorage.setItem('storename', btoa(storename));
-    setStorename(storename);
-    navigate('/detaileddata');
+  
+    navigate(`/detaileddata/${storename}`);
   };
 
   const handleStoreChange = (storeName) => {

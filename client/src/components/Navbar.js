@@ -20,7 +20,7 @@ const Navbar = ({ onLogout }) => {
     <nav className="navbar navbar-expand-lg navbar-light bg-light shadow">
       <div className="container-fluid m-2">
         <div className="d-flex align-items-center">
-          <img src="logo.webp" height={40} alt="Logo" />
+          <img src="/logo.webp" height={40} alt="Logo" />
           <Link
             className="navbar-brand fw-bold fs-6"
             to={getDashboardRoute(userRole)}
@@ -46,17 +46,7 @@ const Navbar = ({ onLogout }) => {
           id="navbarNav"
         >
           <ul className="navbar-nav ms-auto">
-            {/* {userRole === "user" && (
-              <li className="nav-item">
-                <Link
-                  className="nav-link fw-medium"
-                  to="/uploadeddata"
-                  onClick={closeNavbar}
-                >
-                  Uploaded Data
-                </Link>
-              </li>
-            )} */}
+           
 
             {userRole === "admin" && (
               <>
@@ -108,28 +98,7 @@ const Navbar = ({ onLogout }) => {
               </>
             )}
 
-            {/* {(userRole === "district_manager" || userRole === "market_manager") && (
-              <>
-                <li className="nav-item">
-                  <Link
-                    className="nav-link fw-medium"
-                    to={`/${userRole.split('_')[0]}dashboard`}
-                    onClick={closeNavbar}
-                  >
-                    Dashboard
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    className="nav-link fw-medium"
-                    to="/uploadeddata"
-                    onClick={closeNavbar}
-                  >
-                    Uploaded Data
-                  </Link>
-                </li>
-              </>
-            )} */}
+          
 
             <li className="nav-item mt-2 mt-lg-0 mt-md-0">
               <button

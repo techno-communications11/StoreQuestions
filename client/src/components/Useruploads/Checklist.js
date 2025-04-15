@@ -9,6 +9,13 @@ import ChecklistItem from "./ChecklistItem";
 import ChecklistTable from "./ChecklistTable";
 import { useParams } from "react-router-dom";
 
+
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+};
+
 const Checklist = ({ title, filterCondition }) => {
   const [items, setItems] = useState([]);
   const [rowStates, setRowStates] = useState({});
@@ -263,14 +270,16 @@ const Checklist = ({ title, filterCondition }) => {
       </div>
 
       {/* Hidden file input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="d-none"
-        accept="image/*"
-        multiple
-        onChange={handleFileChange}
-      />
+
+<input
+  type="file"
+  ref={fileInputRef}
+  className="d-none"
+  accept="image/*"
+  multiple
+  {...(isMobileDevice() ? { capture: "environment" } : {})}
+  onChange={handleFileChange}
+/>
 
       <div className="d-none d-md-block">
         <ChecklistTable

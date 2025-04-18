@@ -14,7 +14,7 @@ const questions = (req, res) => {
         if (rows.length === 0) {
             return res.status(404).json({ message: 'No stores found.' });
         }
- console.log(rows);
+ // console.log(rows);
         // Send the rows as the response
         res.status(200).json(rows);
     }); 

@@ -11,7 +11,7 @@ const stores = async (req, res) => {
 
         // Execute the query using the connection pool
         const [rows] = await db.promise().query(query);
-         console.log(rows)
+         // console.log(rows)
 
         // Check if any rows were returned
         if (rows.length === 0) {

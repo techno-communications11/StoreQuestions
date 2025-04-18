@@ -16,7 +16,7 @@ const s3 = new S3Client({
 const uploadeddata = async (req, res) => {
   try {
     const { id } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     if (!id) {
       return res.status(400).json({ success: false, message: "ID is required" });

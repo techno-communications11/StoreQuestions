@@ -4,7 +4,7 @@ const validateNtid = async (req, res) => {
     const {ntid } = req.body;
 
     // Log the request body for debugging
-    console.log(req.body);
+    // console.log(req.body);
 
     // Validate input
     if (!ntid) {
@@ -24,7 +24,7 @@ const validateNtid = async (req, res) => {
         const matchedRecord = ntidResults[0];
 
         // Log the matched name for debugging
-        console.log("Matched Name:", matchedRecord.name);
+        // console.log("Matched Name:", matchedRecord.name);
 
         // Step 5: Return success response with the matched name
         return res.status(200).json({

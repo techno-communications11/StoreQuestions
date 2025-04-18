@@ -13,7 +13,7 @@ const s3Client = new S3Client({
 
 const getImagesDataByStoreName = async (req, res) => {
     const { storename, startDate, endDate } = req.body; // Extract storename and date filters from the request body
-    console.log("Received storename:", storename);
+    // console.log("Received storename:", storename);
 
     // Validate input
     if (!storename || typeof storename !== "string") {
@@ -52,12 +52,12 @@ const getImagesDataByStoreName = async (req, res) => {
             queryParams.push(today);
         }
 
-        console.log("Executing query:", query);
-        console.log("Query parameters:", queryParams);
+        // console.log("Executing query:", query);
+        // console.log("Query parameters:", queryParams);
 
         // Execute the query
         const [rows] = await db.promise().query(query, queryParams);
-        console.log("Database rows fetched:", rows);
+        // console.log("Database rows fetched:", rows);
 
         // If no rows are found, return an empty array
         if (!rows || rows.length === 0) {
@@ -74,7 +74,7 @@ const getImagesDataByStoreName = async (req, res) => {
 
             try {
                 imageUrls = JSON.parse(imageRecord.url); // Parse the stringified JSON array
-                console.log("Parsed image URLs:", imageUrls);
+                // console.log("Parsed image URLs:", imageUrls);
             } catch (error) {
                 console.warn(`Failed to parse url field for image ID: ${imageRecord.id}`);
                 return;
@@ -83,7 +83,7 @@ const getImagesDataByStoreName = async (req, res) => {
             // Generate signed URLs for each image URL in the 'url' field (which is an array of URLs)
             const signedUrls = await Promise.all(imageUrls.map(async (imageUrl) => {
                 try {
-                    console.log("Processing image URL:", imageUrl);
+                    // console.log("Processing image URL:", imageUrl);
 
                     const getObjectParams = {
                         Bucket: process.env.AWS_BUCKET_NAME,
@@ -92,7 +92,7 @@ const getImagesDataByStoreName = async (req, res) => {
 
                     const command = new GetObjectCommand(getObjectParams);
                     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-                    console.log("Generated signed URL:", signedUrl);
+                    // console.log("Generated signed URL:", signedUrl);
 
                     return signedUrl;
                 } catch (error) {
@@ -103,7 +103,7 @@ const getImagesDataByStoreName = async (req, res) => {
 
             // Filter out any null values from the signedUrls array in case of errors
             const validSignedUrls = signedUrls.filter(url => url !== null);
-            console.log("Valid signed URLs:", validSignedUrls);
+            // console.log("Valid signed URLs:", validSignedUrls);
 
             if (validSignedUrls.length > 0) {
                 imagesData.push({
@@ -122,7 +122,7 @@ const getImagesDataByStoreName = async (req, res) => {
             }
         }));
 
-        console.log("Generated Image Data:", imagesData);
+        // console.log("Generated Image Data:", imagesData);
 
         // Send back the images data with the signed URLs
         res.json({ success: true, data: imagesData });

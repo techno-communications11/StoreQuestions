@@ -44,7 +44,7 @@ const getMarketWiseStoreStatus = async (req, res) => {
         data: []
       });
     }
-     console.log(results)
+     // console.log(results)
 
     // Send the response with query results
     return res.status(200).json({ success: true, data: results });

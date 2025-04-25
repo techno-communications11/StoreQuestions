@@ -120,6 +120,15 @@ const Checklist = ({ title, filterCondition }) => {
       setErrorMessage("Please select at least one checked question with files");
       return;
     }
+    const browserTime = new Date();
+
+    // Format the date to "2025-03-27 12:08:42"
+    const formattedTime = browserTime.getFullYear() + '-' +
+        String(browserTime.getMonth() + 1).padStart(2, '0') + '-' +
+        String(browserTime.getDate()).padStart(2, '0') + ' ' +
+        String(browserTime.getHours()).padStart(2, '0') + ':' +
+        String(browserTime.getMinutes()).padStart(2, '0') + ':' +
+        String(browserTime.getSeconds()).padStart(2, '0');
 
     const formData = new FormData();
 
@@ -133,7 +142,7 @@ const Checklist = ({ title, filterCondition }) => {
     // Add metadata
     formData.append("ntid", ntid);
     formData.append("storeaddress", selectedstore);
-    formData.append("browserTime", new Date().toISOString());
+    formData.append("browserTime", formattedTime);
 
     // Add questions as comma-separated string
     const questions = selectedItems.map(([question]) => question);

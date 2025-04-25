@@ -7,7 +7,7 @@ const imageverify = async (req, res) => {
   try {
     // Extract status, id, and ids from the request body
     const { status, id, ids,name } = req.body;
-    console.log(req.body, "Request Data");
+    // console.log(req.body, "Request Data");
 
     // Validate input
     if (!status ||!name|| (!id && (!ids || !Array.isArray(ids) || ids.length === 0))) {
@@ -35,7 +35,7 @@ const imageverify = async (req, res) => {
 
     // Execute the update query
     const [result] = await db.promise().query(query, values);
-    console.log(result);
+    // console.log(result);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "Image ID(s) not found" });
@@ -94,7 +94,7 @@ const imageverify = async (req, res) => {
         html: emailBody,
       });
 
-      console.log(`Email sent successfully to ${userEmail} for image ID: ${imageId}`);
+      // console.log(`Email sent successfully to ${userEmail} for image ID: ${imageId}`);
     }
 
     // Send success response

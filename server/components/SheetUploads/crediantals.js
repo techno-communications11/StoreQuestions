@@ -7,7 +7,7 @@ const handleCrediantalsFileUpload = (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No files were uploaded.' });
   }
- console.log(req.file,"end point fetched")
+ // console.log(req.file,"end point fetched")
   // Sanitize file name and define file path
   const sanitizedFileName = path.basename(req.file.originalname);
   const file1Path = path.join('uploads', sanitizedFileName);
@@ -47,7 +47,7 @@ const handleCrediantalsFileUpload = (req, res) => {
           const name = row.name; // Make sure it's extracting the name correctly
 
           // Log the values before inserting
-          console.log(`Inserting NTID: ${ntid}, Doorcode: ${doorcode}, Name: ${name}`);
+          // console.log(`Inserting NTID: ${ntid}, Doorcode: ${doorcode}, Name: ${name}`);
 
           const sql = 'INSERT IGNORE INTO credentials (ntid, doorcode, name) VALUES (?, ?, ?)';
           return new Promise((resolve, reject) => {
@@ -73,7 +73,7 @@ const handleCrediantalsFileUpload = (req, res) => {
             // Remove the uploaded file after data insertion
             try {
               fs.unlinkSync(file1Path); // Remove the file
-              console.log(`File ${file1Path} deleted successfully.`);
+              // console.log(`File ${file1Path} deleted successfully.`);
             } catch (err) {
               console.error(`Error deleting file: ${err}`);
             }

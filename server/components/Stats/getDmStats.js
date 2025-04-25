@@ -54,7 +54,7 @@ const getDmStats = async (req, res) => {
             };
         });
 
-        console.log(result);
+        // console.log(result);
         res.json({ success: true, data: result });
     } catch (err) {
         console.error('Error fetching DM stats:', err);

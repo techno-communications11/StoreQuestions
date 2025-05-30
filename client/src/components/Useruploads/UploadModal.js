@@ -1,5 +1,3 @@
-// components/UploadModal.jsx
-import React from 'react';
 import { Upload } from 'lucide-react';
 import { FaSpinner, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 

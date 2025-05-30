@@ -47,6 +47,7 @@ const DetailedData = () => {
       const data = await response.json();
       if (data.success) {
         setImagesData(data.data);
+        console.log("Fetched images data:", data.data);
       } else {
         setError("No data found for this store");
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { FaClipboardList, FaCheckCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +25,6 @@ const MngEvg = () => {
   const [selectedStore, setSelectedStore] = useState('');
   const [filteredNtid, setFilteredNtid] = useState(false);
 
-   console.log("stores",stores)
 
   const navigate = useNavigate();
 
@@ -145,7 +144,7 @@ const MngEvg = () => {
         filteredNtid={filteredNtid}
         stores={stores}
         searchTerm={searchTerm}
-        setSearchTerm={handleStoreSelect} // Simplified callback
+        setSearchTerm={handleStoreSelect} 
         selectedStore={selectedStore}
         onVerify={handleNtid}
       />

@@ -1,9 +1,10 @@
-import React from 'react';
 import { Button } from 'react-bootstrap';
 import { BsPerson, BsEye, BsCheckCircle, BsXCircle, BsCalendar } from 'react-icons/bs';
 import { motion } from 'framer-motion';
 
 const ImageTableRow = ({ image, index, handleOpenGallery, handleImageAccept, name, getStatusBadge }) => (
+
+   
   <motion.tr
     className="text-center text-nowrap"
     key={index}

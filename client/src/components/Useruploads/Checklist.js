@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   FaSpinner,
   FaCheckCircle,
@@ -8,7 +8,6 @@ import {
 import ChecklistItem from "./ChecklistItem";
 import ChecklistTable from "./ChecklistTable";
 import { useParams } from "react-router-dom";
-
 
 const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -26,40 +25,43 @@ const Checklist = ({ title, filterCondition }) => {
   const [bulkUploadMode, setBulkUploadMode] = useState(false);
   const fileInputRef = useRef(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
-   const{selectedstore,ntid}=useParams();
+  const { selectedstore, ntid } = useParams();
 
   const getItems = async () => {
     try {
       const response = await fetch(
         `${process.env.REACT_APP_BASE_URL}/questions`,
         {
-          // credentials: 'include'
+          credentials: "include", // Enable if authentication is required
         }
       );
 
-      console.log(items,"questions to display")
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch items");
-      } else {
-        const data = await response.json();
-         console.log(data)
-        setItems(data);
-        const initialState = data.reduce((acc, item) => {
-          acc[item.question] = {
-            checked: false,
-            files: [],
-            fileNames: [],
-            uploaded: false,
-            uploadError: false,
-            uploading: false,
-          };
-          return acc;
-        }, {});
-        setRowStates(initialState);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch items: ${response.statusText}`);
       }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid response format: Expected an array");
+      }
+
+      setItems(data);
+      const initialState = data.reduce((acc, item) => {
+        if (!item.question) return acc;
+        acc[item.question] = {
+          checked: false,
+          files: [],
+          fileNames: [],
+          uploaded: false,
+          uploadError: false,
+          uploading: false,
+        };
+        return acc;
+      }, {});
+      setRowStates(initialState);
     } catch (error) {
       console.error("Error fetching items:", error);
-      setErrorMessage("Failed to fetch items. Please try again later.");
+      setErrorMessage(`Failed to fetch items: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -67,7 +69,7 @@ const Checklist = ({ title, filterCondition }) => {
 
   useEffect(() => {
     getItems();
-  }, []);
+  }, [selectedstore, ntid]); // Added dependencies
 
   const handleOpenFileDialog = (question) => {
     if (rowStates[question]?.checked) {
@@ -83,18 +85,22 @@ const Checklist = ({ title, filterCondition }) => {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0 && currentQuestion) {
-      setRowStates((prevState) => ({
-        ...prevState,
-        [currentQuestion]: {
-          ...prevState[currentQuestion],
-          files,
-          fileNames: files.map((file) => file.name),
-          uploaded: false,
-          uploadError: false,
-        },
-      }));
+      setRowStates((prevState) => {
+        const prevFiles = prevState[currentQuestion]?.files || [];
+        const prevFileNames = prevState[currentQuestion]?.fileNames || [];
+        return {
+          ...prevState,
+          [currentQuestion]: {
+            ...prevState[currentQuestion],
+            files: [...prevFiles, ...files],
+            fileNames: [...prevFileNames, ...files.map((file) => file.name)],
+            uploaded: false,
+            uploadError: false,
+          },
+        };
+      });
     }
-    e.target.value = "";
+    e.target.value = ""; // Reset input
   };
 
   const handleCheckboxChange = (question) => (e) => {
@@ -104,7 +110,6 @@ const Checklist = ({ title, filterCondition }) => {
       [question]: {
         ...prevState[question],
         checked: isChecked,
-        // Clear files when unchecking
         files: isChecked ? prevState[question].files : [],
         fileNames: isChecked ? prevState[question].fileNames : [],
       },
@@ -112,6 +117,8 @@ const Checklist = ({ title, filterCondition }) => {
   };
 
   const handleUploadSelected = async () => {
+    const normalizeText = (text) => text.trim().replace(/\s+/g, " ");
+
     const selectedItems = Object.entries(rowStates).filter(
       ([_, state]) => state.checked && state.files.length > 0
     );
@@ -120,33 +127,48 @@ const Checklist = ({ title, filterCondition }) => {
       setErrorMessage("Please select at least one checked question with files");
       return;
     }
-    const browserTime = new Date();
 
-    // Format the date to "2025-03-27 12:08:42"
-    const formattedTime = browserTime.getFullYear() + '-' +
-        String(browserTime.getMonth() + 1).padStart(2, '0') + '-' +
-        String(browserTime.getDate()).padStart(2, '0') + ' ' +
-        String(browserTime.getHours()).padStart(2, '0') + ':' +
-        String(browserTime.getMinutes()).padStart(2, '0') + ':' +
-        String(browserTime.getSeconds()).padStart(2, '0');
+    const browserTime = new Date();
+    const formattedTime =
+      browserTime.getFullYear() +
+      "-" +
+      String(browserTime.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(browserTime.getDate()).padStart(2, "0") +
+      " " +
+      String(browserTime.getHours()).padStart(2, "0") +
+      ":" +
+      String(browserTime.getMinutes()).padStart(2, "0") +
+      ":" +
+      String(browserTime.getSeconds()).padStart(2, "0");
 
     const formData = new FormData();
+    const questions = [];
+    const fileCounts = {};
+    let allFiles = [];
 
-    // Add all files
-    selectedItems.forEach(([_, state]) => {
-      state.files.forEach((file) => {
-        formData.append("files", file);
-      });
+    selectedItems.forEach(([question, state]) => {
+      const normalizedQuestion = normalizeText(question);
+      questions.push(normalizedQuestion);
+      fileCounts[normalizedQuestion] = state.files.length;
+      allFiles = [...allFiles, ...state.files];
     });
 
-    // Add metadata
+    allFiles.forEach((file) => {
+      formData.append("files", file);
+    });
+
     formData.append("ntid", ntid);
     formData.append("storeaddress", selectedstore);
     formData.append("browserTime", formattedTime);
-
-    // Add questions as comma-separated string
-    const questions = selectedItems.map(([question]) => question);
     formData.append("questions", questions.join(","));
+    formData.append("fileCounts", JSON.stringify(fileCounts));
+
+    if (process.env.NODE_ENV === "development") {
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+    }
 
     setUploading(true);
     setErrorMessage("");
@@ -157,22 +179,40 @@ const Checklist = ({ title, filterCondition }) => {
         {
           method: "POST",
           body: formData,
-          // credentials:'include'
-          // headers are automatically set by browser for FormData
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
+        if (
+          data.error === "Some questions are invalid or disabled" &&
+          data.invalidQuestions
+        ) {
+          throw new Error(
+            `Upload failed: Invalid questions: ${data.invalidQuestions
+              .map((q) => normalizeText(q))
+              .join(", ")}`
+          );
+        }
         throw new Error(data.error || "Upload failed");
+      }
+
+      if (data.successfulUploads === 0 && data.totalFiles > 0) {
+        // If no files were successfully uploaded but there were files to upload
+        const failedUploads = data.uploads.filter((u) => u.status === "failed");
+        const errorDetails = failedUploads
+          .map((u) => `${u.originalName}: ${u.error}`)
+          .join("; ");
+        throw new Error(
+          `No files were uploaded successfully. Errors: ${errorDetails}`
+        );
       }
 
       setSuccessMessage(
         `Successfully uploaded ${data.successfulUploads} files`
       );
 
-      // Reset successfully uploaded items
       setRowStates((prev) => {
         const newState = { ...prev };
         selectedItems.forEach(([question]) => {
@@ -180,6 +220,9 @@ const Checklist = ({ title, filterCondition }) => {
             checked: false,
             files: [],
             fileNames: [],
+            uploaded: true,
+            uploadError: false,
+            uploading: false,
           };
         });
         return newState;
@@ -193,16 +236,36 @@ const Checklist = ({ title, filterCondition }) => {
   };
 
   const toggleBulkUploadMode = () => {
-    setBulkUploadMode(!bulkUploadMode);
+    setBulkUploadMode((prev) => !prev);
     setErrorMessage("");
     setSuccessMessage("");
+    if (bulkUploadMode) {
+      // Clear checked states and files when exiting bulk mode
+      setRowStates((prev) => {
+        const newState = { ...prev };
+        Object.keys(newState).forEach((question) => {
+          newState[question] = {
+            ...newState[question],
+            checked: false,
+            files: [],
+            fileNames: [],
+            uploaded: false,
+            uploadError: false,
+            uploading: false,
+          };
+        });
+        return newState;
+      });
+    }
   };
 
-  const filteredItems = items.filter(filterCondition);
+  const filteredItems = useMemo(
+    () => items.filter(filterCondition),
+    [items, filterCondition]
+  );
 
   return (
     <div className="container-fluid mt-5">
-      {/* Success/Error messages and loading spinner... */}
       {loading && (
         <div className="text-center my-4">
           <FaSpinner className="fa-spin me-2" size={24} />
@@ -278,17 +341,16 @@ const Checklist = ({ title, filterCondition }) => {
         </div>
       </div>
 
-      {/* Hidden file input */}
-
-<input
-  type="file"
-  ref={fileInputRef}
-  className="d-none"
-  accept="image/*"
-  multiple
-  {...(isMobileDevice() ? { capture: "environment" } : {})}
-  onChange={handleFileChange}
-/>
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="d-none"
+        accept="image/*"
+        multiple
+        {...(isMobileDevice() ? { capture: "environment" } : {})}
+        onChange={handleFileChange}
+        aria-label="Upload images"
+      />
 
       <div className="d-none d-md-block">
         <ChecklistTable
@@ -304,7 +366,7 @@ const Checklist = ({ title, filterCondition }) => {
         <div className="row">
           {filteredItems.map((item, index) => (
             <ChecklistItem
-              key={index}
+              key={item.question || index} // Use question as key if unique
               index={index}
               question={item.question}
               checked={rowStates[item.question]?.checked || false}

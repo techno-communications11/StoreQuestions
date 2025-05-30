@@ -1,40 +1,63 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import useMarkets from "../Utils/useMarkets ";
 import Lottie from "lottie-react";
 import Animation from "./RegisterAnimation.json";
-import { Col } from "react-bootstrap";
+import { Col, Dropdown, Form } from "react-bootstrap";
+
 const Register = () => {
   const [userData, setUserData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
     role: "user",
-    districtManagerName: "", // Added for district manager role
+    name: "",
+    market: [],
   });
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showconfirmPassword, setconfirmShowPassword] = useState(false);
   const { markets, loading, errormarket } = useMarkets();
+  const [registerloading, setregisterLoading] = useState(false);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setUserData({
       ...userData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+  };
+
+  const handleMarketSelect = (market) => {
+    setUserData((prev) => {
+      const newMarkets = prev.market.includes(market)
+        ? prev.market.filter((m) => m !== market)
+        : [...prev.market, market];
+      return { ...prev, market: newMarkets };
+    });
+  };
+
+  const clearMarkets = () => {
+    setUserData((prev) => ({ ...prev, market: [] }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+setregisterLoading(true);
     if (userData.password !== userData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
+    if (userData.role === "market_manager" && userData.market.length === 0) {
+      setError("Please select at least one market");
+      return;
+    }
+      
+
     try {
-      console.log(userData);
       const response = await fetch(
         `${process.env.REACT_APP_BASE_URL}/register`,
         {
@@ -57,7 +80,8 @@ const Register = () => {
           password: "",
           confirmPassword: "",
           role: "user",
-          districtManagerName: "",
+          name: "",
+          market: [],
         });
       } else {
         setError(data.message || "Registration failed");
@@ -65,16 +89,22 @@ const Register = () => {
     } catch (err) {
       setError("Registration failed. Please try again.");
     }
+    finally {
+      setregisterLoading(false);
+    }
   };
-  if (loading) {
+
+  if (loading || registerloading) {
     return (
-      <div class="d-flex justify-content-center align-items-center vh-100">
-        <div class="spinner-border p-5"></div>
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border p-5"></div>
       </div>
     );
   }
 
   if (errormarket) return <p>Error: {errormarket}</p>;
+
+  const marketOptions = markets.map((m) => m.market);
 
   return (
     <div className="d-flex flex-column justify-content-center align-items-center">
@@ -119,9 +149,9 @@ const Register = () => {
           <Col className="col-md-5 col-sm-12 col-lg-5">
             <div
               className="card shadow-lg border-0 rounded-lg"
-              xs={12} // Full width on extra small screens
-              md={8} // 1/3 width on medium screens
-              lg={8} //1/3 width on large screens
+              xs={12}
+              md={8}
+              lg={8}
             >
               <div className="card-body">
                 {error && <div className="alert alert-danger">{error}</div>}
@@ -157,15 +187,13 @@ const Register = () => {
                     </select>
                   </div>
 
-                  {/* Additional input if role is district manager */}
-
                   <div className="mb-3">
                     <input
                       type="text"
                       className="form-control shadow-none border"
-                      id="districtManagerName"
-                      name="districtManagerName"
-                      value={userData.districtManagerName}
+                      id="name"
+                      name="name"
+                      value={userData.name}
                       onChange={handleChange}
                       placeholder="Enter Name"
                       required
@@ -174,21 +202,55 @@ const Register = () => {
 
                   {userData.role === "market_manager" && (
                     <div className="mb-3">
-                      <select
-                        className="form-select shadow-none border"
-                        id="market"
-                        name="market"
-                        value={userData.market}
-                        onChange={handleChange}
-                        required
-                      >
-                        <option value="">Select Market</option>
-                        {markets.map((market, index) => (
-                          <option key={index} value={market.market}>
-                            {market.market}
-                          </option>
-                        ))}
-                      </select>
+                      <label className="form-label">Select Markets</label>
+                      <Dropdown>
+                        <Dropdown.Toggle
+                          variant="outline-secondary"
+                          className="w-100 text-start d-flex justify-content-between align-items-center"
+                        >
+                          {userData.market.length > 0
+                            ? `Selected: ${userData.market.length}`
+                            : "Select markets"}
+                          <span className="ms-auto">▼</span>
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu
+                          className="p-2"
+                          style={{ width: "100%" }}
+                        >
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span className="text-muted small">
+                              Select multiple markets
+                            </span>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-link p-0"
+                              onClick={clearMarkets}
+                            >
+                              Clear All
+                            </button>
+                          </div>
+                          <div
+                            style={{ maxHeight: "200px", overflowY: "auto" }}
+                          >
+                            {marketOptions.map((market) => (
+                              <Form.Check
+                                key={market}
+                                type="checkbox"
+                                id={`market-${market}`}
+                                label={market}
+                                checked={userData.market.includes(market)}
+                                onChange={() => handleMarketSelect(market)}
+                                className="py-1 px-2 rounded hover-bg-light"
+                              />
+                            ))}
+                          </div>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                      {userData.market.length > 0 && (
+                        <div className="mt-2 small text-muted">
+                          Selected: {userData.market.join(", ")}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -215,8 +277,9 @@ const Register = () => {
                   </div>
 
                   <div className="mb-3">
+                    <div className="input-group">
                     <input
-                      type={showPassword ? "text" : "password"}
+                      type={showconfirmPassword ? "text" : "password"}
                       className="form-control shadow-none border"
                       id="confirmPassword"
                       name="confirmPassword"
@@ -225,6 +288,14 @@ const Register = () => {
                       placeholder="Confirm password"
                       required
                     />
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary shadow-none border"
+                        onClick={() => setconfirmShowPassword(!showconfirmPassword)}
+                      >
+                        {showconfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                      </button>
+                      </div>
                   </div>
 
                   <button

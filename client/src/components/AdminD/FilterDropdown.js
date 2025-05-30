@@ -1,4 +1,3 @@
-import React from 'react';
 import { Dropdown, Form } from 'react-bootstrap';
 
 const FilterDropdown = ({ title, items, filterType, selectedItems, handleFilterChange, clearFilters }) => (

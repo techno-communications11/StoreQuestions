@@ -1,8 +1,8 @@
-import React from 'react';
 import { Modal } from 'react-bootstrap';
 
 const ImageGalleryModal = ({ show, onHide, title, imagesData, selectedImageIndex, isFullGallery }) => {
   const renderImages = () => {
+     
     if (isFullGallery) {
       const allSignedUrls = imagesData.flatMap(store => store?.signedUrls || []);
       return allSignedUrls.length > 0 ? (

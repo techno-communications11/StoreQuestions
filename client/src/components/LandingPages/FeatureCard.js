@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card } from 'react-bootstrap';
 
 const FeatureCard = ({ icon: Icon, title, description, buttonText, onClick }) => (

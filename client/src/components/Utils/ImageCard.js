@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Button } from 'react-bootstrap';
 import { BsCalendar, BsPerson, BsEye, BsCheckCircle, BsXCircle } from 'react-icons/bs';
 import { motion } from 'framer-motion';
